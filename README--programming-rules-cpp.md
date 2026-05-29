@@ -4,7 +4,7 @@ copyright-years: 2026
 copyright-authors: David SPORN
 SPDX-License-Identifier: AGPL-3.0-or-later
 ---
-# Programming rules for CPP
+# Programming rules for C++
 
 ## Preliminary statements
 
@@ -50,6 +50,12 @@ uint64_t* uint64Array = (uint64_t*)ptr; // contains 0xf0debc9a78563412
 
 ## Syntax
 
+### Prefer return by value
+
+* It may trigger (Named) Return Value Optimisation.
+* It is simpler to think and reason about.
+
+
 ## Types
 
 ### Use types with explicit size and signedness instead of implicite ones
@@ -67,6 +73,14 @@ Exceptions:
 * The project is restricted to support only US-ASCII characters (code 0 to 127)
 * code leveraging system calls requiring char, wchar, etc...
 * code tasked with I/O operations, and tasked encoding to/decoding from a given encoding charset, e.g. UTF-8, ISO-8859-1, CP1252, ...
+
+### Return std::expected or std::optional instead of error codes
+
+When designing an API for a task that MAY fail : 
+
+* DO use `std::expected<T,E>` for public APIs.
+* MAY use `std::optional<T>` in private APIs, when knowing which kind of error does not matter or won't be reported to anyone anyway.
+* DON'T use a sentinel value to express OK/ERROR/WHICH ERROR. 
 
 ## Style
 
