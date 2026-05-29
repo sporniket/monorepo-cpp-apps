@@ -1,3 +1,9 @@
+---
+creation-date: 2026-05-28
+copyright-years: 2026
+copyright-authors: David SPORN
+SPDX-License-Identifier: AGPL-3.0-or-later
+---
 # monorepo-cpp-apps
 
 A monorepo for my cpp projects (small to mid-sized).

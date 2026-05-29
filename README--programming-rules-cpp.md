@@ -1,3 +1,9 @@
+---
+creation-date: 2026-05-29
+copyright-years: 2026
+copyright-authors: David SPORN
+SPDX-License-Identifier: AGPL-3.0-or-later
+---
 # Programming rules for CPP
 
 ## Preliminary statements
