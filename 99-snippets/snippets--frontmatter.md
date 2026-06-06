@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 A collection of frontmatter blocks for various formats.
 
-_Naming scheme : `'frntmtr'+suffix`, e.g. `frntmtrmd`, `frntmtrhash`.
+_Naming scheme : `'frntmtr'+suffix`, e.g. `frntmtrmd`, `frntmtrhash`._
 
 ## frntmtrmd
 
