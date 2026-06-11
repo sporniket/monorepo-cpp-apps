@@ -6,8 +6,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 ---
 # IoError
 
-> DRAFT
-
 ## Overview
 
 A model to describe an error triggered by an I/O operations.
