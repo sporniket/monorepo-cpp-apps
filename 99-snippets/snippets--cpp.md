@@ -23,6 +23,32 @@ Your doc.
 ************************************************/
 ```
 
+## guardinclude
+
+```cpp
+#ifndef __CMSPK__@@@{v:guard}_HPP__
+#define __CMSPK__@@@{v:guard}_HPP__
+// ================[ CODE BEGINS ]================
+
+
+// ================[ END OF CODE ]================
+#endif
+```
+
+## guardinclude_namespace
+
+```cpp
+#ifndef __CMSPK__@@@{v:guard_namespace}__@@@{v:guard}_HPP__
+#define __CMSPK__@@@{v:guard_namespace}__@@@{v:guard}_HPP__
+
+namespace cmspk::@@@{v:namespace} {
+// ================[ CODE BEGINS ]================
+
+// ================[ END OF CODE ]================
+}  // namespace cmspk::@@@{v:namespace}
+#endif
+```
+
 ## cppclsrul5
 
 Template of a class that needs to define the copy and move operations. The template is
