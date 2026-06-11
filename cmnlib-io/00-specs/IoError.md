@@ -44,7 +44,7 @@ Also, the message and additional details could be represented as ASCII strings o
 |name|description|
 |---|---|
 |`NOT_READY`|It is possible to retry later and get a success|
-|`END_OF_DATA`|No more data to read|
+|`END_OF_DATA`|No more data to read/write|
 |`BAD`|The source is definitely not operational|
 
 
