@@ -74,6 +74,16 @@ Exceptions:
 * code leveraging system calls requiring char, wchar, etc...
 * code tasked with I/O operations, and tasked encoding to/decoding from a given encoding charset, e.g. UTF-8, ISO-8859-1, CP1252, ...
 
+### Design types with string values agnostically
+
+If a type `T` has fields being strings, or uses strings in its methods : 
+
+* Define a template `BasicT<...,class S>` with S a string type, e.g. `std::string`, `std::u32string`,...
+* Define `T` as `BasicT<...,std::u32string>` ; implements the specifics of this alias as needed.
+* Optionally, define `TAscii` as `Basic<...,std::string>` ; implements the specifics of this alias as needed.
+
+
+
 ### Return std::expected or std::optional instead of error codes
 
 When designing an API for a task that MAY fail : 
