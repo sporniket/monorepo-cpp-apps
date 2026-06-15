@@ -13,6 +13,10 @@ since:0.0.1
 
 An interface to model a source of arbitrary type.
 
+## Requirements
+
+* [IoError](IoError.md)
+
 ## Technical details
 
 ```
@@ -20,7 +24,7 @@ An interface to model a source of arbitrary type.
 // T type of data returned
 // S type of string (should be either std::string or std::u32string)
 template<class T, class S>
-class DataSource{
+class BasicDataSource{
   public:
     virtual std::expected<T,BasicIoError<S>> next() = 0;
     virtual bool hasNext() {return true;} // override to avoid a read expected to fail
@@ -28,6 +32,10 @@ class DataSource{
     virtual ~DataSource() {}
     // rule of 5 use =default
 };
+
+// The actual nominal type will use BasicIoError<std::u32string>.
+template<class T>
+using DataSource = BasicDataSource<T,std::u32string>;
 ```
 
 ## Additional types
