@@ -3,7 +3,7 @@ creation-date: 2026-06-02
 copyright-years: 2026
 copyright-authors: David SPORN
 SPDX-License-Identifier: AGPL-3.0-or-later
-milestone:0.0.1
+milestone: 0.0.1
 ---
 
 # Implement DataSource

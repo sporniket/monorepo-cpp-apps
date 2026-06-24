@@ -3,6 +3,7 @@ creation-date: 2026-06-23
 copyright-years: 2026
 copyright-authors: David SPORN
 SPDX-License-Identifier: AGPL-3.0-or-later
+milestone: 0.0.2
 ---
 
 # TtyInputSource should handle io errors
