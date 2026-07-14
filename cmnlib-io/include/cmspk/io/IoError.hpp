@@ -25,7 +25,7 @@ enum class IoErrorType {
     /**
      * It is impossible to get a succesfull read/write.
      */
-    BAD;
+    BAD
 };
 
 /**
@@ -37,7 +37,7 @@ enum class IoErrorType {
  *
  * @param S the type to use as strings, e.g. `std::string`, `std::u32string`.
  */
-template <S>
+template <class S>
 struct BasicIoError {
     IoErrorType type;
     S message;
