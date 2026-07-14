@@ -8,6 +8,8 @@
 #ifndef __CMSPK__IO__IO_ERROR_HPP__
 #define __CMSPK__IO__IO_ERROR_HPP__
 
+#include <string>
+
 namespace cmspk::io {
 // ================[ CODE BEGINS ]================
 /**
@@ -35,24 +37,24 @@ enum class IoErrorType {
  *
  * Also, the message and additional details could be represented as US-ASCII strings or Unicode strings.
  *
- * @param S the type to use as strings, e.g. `std::string`, `std::u32string`.
+ * @param CharT the type to use as character, e.g. `char8_t`, `char32_t`.
  */
-template <class S>
+template <class CharT>
 struct BasicIoError {
     IoErrorType type;
-    S message;
-    std::vector<S> details;
+    std::basic_string<CharT> message;
+    std::vector<std::basic_string<CharT>> details;
 };
 
 /**
  * I/O error to use when using US-ASCII strings.
  */
-using IoErrorAscii = BasicIoError<std::string>;
+using IoErrorAscii = BasicIoError<char8_t>;
 
 /**
  * I/O error to use when using Unicode strings.
  */
-using IoError = BasicIoError<std::u32string>;
+using IoError = BasicIoError<char32_t>;
 
 // ================[ END OF CODE ]================
 }  // namespace cmspk::io

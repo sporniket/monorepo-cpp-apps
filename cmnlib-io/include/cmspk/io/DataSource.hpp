@@ -17,12 +17,12 @@ namespace cmspk::io {
  * Generic model of an interface to model a source of arbitrary type.
  *
  * @param T the type returned by a successfull read.
- * @param S the type to use as strings by IoError, e.g. `std::string`, `std::u32string`.
+ * @param CharT type of character, e.g. `char8_t`, `char32_t`.
  */
-template <class T, class S>
+template <class T, class CharT>
 class BasicDataSource {
   public:
-    virtual std::expected<T, BasicIoError<S>> next() = 0;
+    virtual std::expected<T, BasicIoError<CharT>> next() = 0;
     virtual bool hasNext() { return true; }  // override to avoid a read expected to fail
 
     virtual ~BasicDataSource() = default;
@@ -53,7 +53,7 @@ class BasicDataSource {
  * @param T the type returned by a successfull read.
  */
 template <class T>
-using DataSource = BasicDataSource<T, std::u32string>;
+using DataSource = BasicDataSource<T, char32_t>;
 
 // ================[ END OF CODE ]================
 }  // namespace cmspk::io

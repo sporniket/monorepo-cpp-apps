@@ -7,7 +7,9 @@ since: 0.0.1
 ---
 # DataSource
 
-> DRAFT
+## History
+
+* **0.0.2** : replace String class by character class in template arg.
 
 ## Overview
 
@@ -22,20 +24,20 @@ An interface to model a source of arbitrary type.
 ```
 // Require IoError
 // T type of data returned
-// S type of string (should be either std::string or std::u32string)
-template<class T, class S>
+// CharT type of character (should be either char8_t or char32_t)
+template<class T, class CharT>
 class BasicDataSource{
   public:
-    virtual std::expected<T,BasicIoError<S>> next() = 0;
+    virtual std::expected<T,BasicIoError<CharT>> next() = 0;
     virtual bool hasNext() {return true;} // override to avoid a read expected to fail
     
     virtual ~DataSource() {}
     // rule of 5 use =default
 };
 
-// The actual nominal type will use BasicIoError<std::u32string>.
+// The actual nominal type will use BasicIoError<char32_t>.
 template<class T>
-using DataSource = BasicDataSource<T,std::u32string>;
+using DataSource = BasicDataSource<T,char32_t>;
 ```
 
 ## Additional types

@@ -7,6 +7,10 @@ since: 0.0.1
 ---
 # IoError
 
+## History
+
+* **0.0.2** : replace String class by character class in template arg.
+
 ## Overview
 
 A model to describe an error triggered by an I/O operations.
@@ -17,15 +21,15 @@ enum class IoErrorType {
   NOT_READY,END_OF_DATA,BAD ;
 };
 
-template<S> // require string (trait, concept ?)
+template<class CharT> // usually char8_t or char32_t
 struct BasicIoError{
   IoErrorType type;
-  S message;
-  std::vector<S> details;
+  std::basic_string<CharT> message;
+  std::vector<std::basic_string<CharT>> details;
 };
 
-using IoErrorAscii = BasicIoError<std::string>;
-using IoError = BasicIoError<std::u32string>;
+using IoErrorAscii = BasicIoError<char8_t>;
+using IoError = BasicIoError<char32_t>;
 ```
 
 ## Technical details
