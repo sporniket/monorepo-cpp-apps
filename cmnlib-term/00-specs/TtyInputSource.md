@@ -14,77 +14,23 @@ since: 0.0.2
 * As a result of the previous statement, **this design is restricted to architectures where a byte is an octet**.
 * A **character**, as read from low level stdin, is a 8-bits, unsigned value, a.k.a. an octet.
 * We will use `char8_t` as the character type.
+* **The term "TTY" is expected to designate a teminal inside a virtual terminal**, while it is used to speak of serial terminals.
+* If possible, **supports 32-bits CPUs** 
+
+
+## Require
+
+* [TtyInput](./TtyInput.md)
+* [TtyInputFromCharacters](./TtyInputFromCharacters.md)
+* [DataSource](../../cmnlib-io/00-specs/DataSource.md)
 
 ## Overview
 
-> **Note :** although this specification use "TTY" to speak of serial terminals, it will be expected to be
-> inside a **virtual terminal**.
-
-An adapter of a character data source that presents itself as a data source of tty inputs, that are
-
-* either a _report_, usually after sending an output request to the TTY output, e.g. a report on the cursor position;
-* or a _key stroke_, either encoded as a single char (1 to 27, 127), or as an escape sequence (`"\x1b[A"` for cursor up)
-* or the null byte (zero), that will be ignored
-* otherwise, this is a printable character, or the start of a multi-octets character, depending of the encoding.
+An adapter of a character data source that presents itself as a data source of tty inputs.
 
 ## Technical details
 
-* Additional constants
-* Additional types
 * TtyInputSource features
-
-### Additional constants
-
-|type|name|brief|
-|---|---|---|
-|enum `TtyInputKey`|`CTRL_A` (=1)|Key combination : `CTRL` + `A`|
-|enum `TtyInputKey`|`CTRL_B`|Key combination : `CTRL` + `B`|
-|enum `TtyInputKey`|`CTRL_C`|Key combination : `CTRL` + `C`|
-|enum `TtyInputKey`|`CTRL_D`|Key combination : `CTRL` + `D`|
-|enum `TtyInputKey`|`CTRL_E`|Key combination : `CTRL` + `E`|
-|enum `TtyInputKey`|`CTRL_F`|Key combination : `CTRL` + `F`|
-|enum `TtyInputKey`|`CTRL_G`|Key combination : `CTRL` + `G`|
-|enum `TtyInputKey`|`CTRL_H`|Key combination : `CTRL` + `H`|
-|enum `TtyInputKey`|`HTAB`|`Horizontal tabulation` key|
-|enum `TtyInputKey`|`CTRL_J`|Key combination : `CTRL` + `J`|
-|enum `TtyInputKey`|`CTRL_K`|Key combination : `CTRL` + `K`|
-|enum `TtyInputKey`|`CTRL_L`|Key combination : `CTRL` + `L`|
-|enum `TtyInputKey`|`RETURN`|`Carriage return` key|
-|enum `TtyInputKey`|`CTRL_N`|Key combination : `CTRL` + `N`|
-|enum `TtyInputKey`|`CTRL_O`|Key combination : `CTRL` + `O`|
-|enum `TtyInputKey`|`CTRL_P`|Key combination : `CTRL` + `P`|
-|enum `TtyInputKey`|`CTRL_Q`|Key combination : `CTRL` + `Q`|
-|enum `TtyInputKey`|`CTRL_R`|Key combination : `CTRL` + `R`|
-|enum `TtyInputKey`|`CTRL_S`|Key combination : `CTRL` + `S`|
-|enum `TtyInputKey`|`CTRL_T`|Key combination : `CTRL` + `T`|
-|enum `TtyInputKey`|`CTRL_U`|Key combination : `CTRL` + `U`|
-|enum `TtyInputKey`|`CTRL_V`|Key combination : `CTRL` + `V`|
-|enum `TtyInputKey`|`CTRL_W`|Key combination : `CTRL` + `W`|
-|enum `TtyInputKey`|`CTRL_X`|Key combination : `CTRL` + `X`|
-|enum `TtyInputKey`|`CTRL_Y`|Key combination : `CTRL` + `Y`|
-|enum `TtyInputKey`|`CTRL_Z`|Key combination : `CTRL` + `Z`|
-|enum `TtyInputKey`|`ESCAPE`|`ESCAPE` key|
-|enum `TtyInputKey`|`ARROW_UP`|Arrow key : up |
-|enum `TtyInputKey`|`ARROW_DOWN`|Arrow key : down |
-|enum `TtyInputKey`|`ARROW_LEFT`|Arrow key : left |
-|enum `TtyInputKey`|`ARROW_RIGHT`|Arrow key : right |
-|enum `TtyInputReportType`|`CURSOR_POSITION`|A report containing the cursor position ; e.g "\x1b[24;80R"|
-|const `TtyInputNull`|`NULL_CHAR`|a constant to easily return a `TtyInputNull`|
-
-### Additional types
-
-* `TtyInputNull` : an empty type, to be returned when the datasource get zero (0), which should not happen in a terminal input.
-* `TtyInputReport` : a report, like the terminal dimensions.
-
-```cpp
-struct TtyInputNull {};
-
-template<class C>
-struct TtyInputReport {
-  TtyInputReportType type,
-  std::vector<std::u8string> parameters
-};
-```
 
 ### TtyInputSource features
 
@@ -94,18 +40,11 @@ When instructed to return the next data, it reads as much data needed in order t
 
 When trying to read a multi-octets sequence, and when it matches, then all the octets of the sequence are _consumed_. The next data will read the data source.
 
-When trying to read a multi-octets sequence, and when it does not matches, then all the octets of the sequence are _memorized_, and it tries to match another kind of tty input using those memorized octets.
-
-The recommanded order of matching is the following : 
-
-* the null octet (zero)
-* a single-octet key stroke
-* a tty report
-* a multi-octets key stroke 
+When trying to read a multi-octets sequence, and when it does not matches, then all the octets before the last one are converted to single-octet tty input and buffered, while the last octet is either a single-octet tty input, or the first octet of a potential multi-octets tty input ; in the former case the last octet is converted to a single-octet tty input and buffered after the others tty inputs ; in the later case, a new attempt at reading a multi-octet tty input is performed.
 
 ## Tests
 
-### TtyInputSource should return a tty null
+### TtyInputSource should return a tty null on reading the zero octet
 
 **given** a character data source that will return zero.
 
@@ -123,7 +62,7 @@ The recommanded order of matching is the following :
 
 **then** the TtyInputSource will return a `std::variant` containing the char8_t `Chr`.
 
-### TtyInputSource should return keys
+### TtyInputSource should return keys on recognizing key sequences
 
 **For each enum value `K` in `TtyInputKey`**
 
@@ -133,7 +72,7 @@ The recommanded order of matching is the following :
 
 **then** the TtyInputSource will return a `std::variant` containing the `TtyInputKey` `Ks`.
 
-### TtyInputSource should return cursor position report
+### TtyInputSource should return tty report on recognizing cursor position report
 
 **given** a character data source that will return the sequence "\x1b[24;80R"
 
@@ -141,7 +80,7 @@ The recommanded order of matching is the following :
 
 **then** the TtyInputSource will return a `std::variant` containing the `TtyInputReport` of type `CURSOR_POSITION`, with 2 arguments "24" and "80".
 
-### TtyInputSource should reuse unconsumed reads from the character data source
+### TtyInputSource should buffer single-octet tty inputs when a sequence is interrupted by an error.
 
 **given** a character data source that will return the sequence "\x1b[2" and then an IoError `END_OF_DATA`
 
@@ -152,6 +91,19 @@ The recommanded order of matching is the following :
 * a `std::variant` containing the `TtyInputKey` value `ESCAPE` ;
 * a `std::variant` containing the printable character `[` ;
 * a `std::variant` containing the printable character `2` ;
+
+### TtyInputSource should not lose data when a new sequence interrupt a partial sequence of a multi-octets tty input
+
+**given** a character data source that will return the sequence "\x1b[2\x1b[A"
+
+**when** reading the next TtyInput four times
+
+**then** the TtyInputSource will return the following sequence of `std::variant` : 
+
+* a `std::variant` containing the `TtyInputKey` value `ESCAPE` ;
+* a `std::variant` containing the printable character `[` ;
+* a `std::variant` containing the printable character `2` ;
+* a `std::variant` containing the `TtyInputKey` value `ARROW_UP` ;
 
 ---
 # sandbox
