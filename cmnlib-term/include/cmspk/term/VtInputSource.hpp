@@ -5,48 +5,48 @@
 // A collection of utilities for writing terminal-hosted applications.
 // ---
 
-#ifndef __CMSPK__TERM__TTYINPUTSOURCE_HPP__
-#define __CMSPK__TERM__TTYINPUTSOURCE_HPP__
+#ifndef __CMSPK__TERM__VTINPUTSOURCE_HPP__
+#define __CMSPK__TERM__VTINPUTSOURCE_HPP__
 
 #include <string>
 
 #include "cmspk/io/DataSource.hpp"
 
-#include "cmspk/term/TtyInput.hpp"
-#include "cmspk/term/TtyInputFromCharacters.hpp"
+#include "cmspk/term/VtInput.hpp"
+#include "cmspk/term/VtInputFromCharacters.hpp"
 
 namespace cmspk::term {
 // ================[ CODE BEGINS ]================
 
 // TODO AsciiStdinDataSource = DataSource<char8_t> encapsulating read(STDIN,...)
-// TODO BasicTtyInputSource<CharT> --> AsciiTtyInputSource = BasicTtyInputSource<char8_t>
+// TODO BasicVtInputSource<CharT> --> AsciiVtInputSource = BasicVtInputSource<char8_t>
 
 template<class CharT, class S>
-class BasicTtyInputSource : public DataSource<BasicTtyInput<CharT>> {
+class BasicVtInputSource : public DataSource<BasicVtInput<CharT>> {
   public:
-    virtual std::expected<BasicTtyInput<CharT>, BasicIoError<S>> next() ;
-    BasicTtyInputSource(BasicDataSource<CharT,S> source) : source(source) {};
-    virtual ~BasicTtyInputSource() {} ;
+    virtual std::expected<BasicVtInput<CharT>, BasicIoError<S>> next() ;
+    BasicVtInputSource(BasicDataSource<CharT,S> source) : source(source) {};
+    virtual ~BasicVtInputSource() {} ;
 
     /**
      * Copy operation (rule of 5).
      */
-    BasicTtyInputSource(const BasicTtyInputSource&) = default;
+    BasicVtInputSource(const BasicVtInputSource&) = default;
 
     /**
      * Copy operator (rule of 5).
      */
-    BasicTtyInputSource& operator=(const BasicTtyInputSource&) = default;
+    BasicVtInputSource& operator=(const BasicVtInputSource&) = default;
 
     /**
      * Move operation (rule of 5).
      */
-    BasicTtyInputSource(BasicTtyInputSource&&) = default;
+    BasicVtInputSource(BasicVtInputSource&&) = default;
 
     /**
      * Move operator (rule of 5).
      */
-    BasicTtyInputSource& operator=(BasicTtyInputSource&&) = default;
+    BasicVtInputSource& operator=(BasicVtInputSource&&) = default;
 
 
   private:
@@ -54,14 +54,14 @@ class BasicTtyInputSource : public DataSource<BasicTtyInput<CharT>> {
 };
 
 template<class S>
-using AsciiTtyInputSource = BasicTtyInputSource<char8_t, S>;
+using AsciiVtInputSource = BasicVtInputSource<char8_t, S>;
 
 template<>
-class AsciiTtyInputSource<std::u32string> ;
+class AsciiVtInputSource<std::u32string> ;
 
-// TODO TtyInput.cpp -> 
+// TODO VtInput.cpp -> 
 /*
-std::expected<BasicTtyInput<char8_t>, BasicIoError<std::u32string>> AsciiTtyInputSource<std::u32string>::next() {
+std::expected<BasicVtInput<char8_t>, BasicIoError<std::u32string>> AsciiVtInputSource<std::u32string>::next() {
   std::expected<char8_t, BasicIoError<std::u32string>> nextOctet = source.next() ;
   if (nextOctet) {
     doSomethingWith(nextOctet.value())

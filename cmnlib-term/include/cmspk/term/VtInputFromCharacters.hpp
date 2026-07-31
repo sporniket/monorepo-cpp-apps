@@ -5,8 +5,8 @@
 // A collection of utilities for writing terminal-hosted applications.
 // ---
 
-#ifndef __CMSPK__TERM__TTYINPUTFROMCHARACTERS_HPP__
-#define __CMSPK__TERM__TTYINPUTFROMCHARACTERS_HPP__
+#ifndef __CMSPK__TERM__VTINPUTFROMCHARACTERS_HPP__
+#define __CMSPK__TERM__VTINPUTFROMCHARACTERS_HPP__
 
 #include <string>
 
@@ -16,20 +16,20 @@ namespace cmspk::term {
 // ================[ CODE BEGINS ]================
 
 /* draft */
-class AsciiTtyInputFromRawCharacters {
+class AsciiVtInputFromRawCharacters {
   public:
-    bool canAppend() ; // true when more data is needed to obtain a ttyInput, false when data is available.
+    bool canAppend() ; // true when more data is needed to obtain a VtInput, false when data is available.
     void append(char8_t) ; //feeds the converter
     void abort() ; // any appended characters will be made available
     bool hasData() ; //true as long as all the data has not be consumed (when finally there was nothing, all the chars can be retrieved)
-    std::optional<AsciiTtyInput> getData() ; //when there are non consumed data available, returns a non empty value
+    std::optional<AsciiVtInput> getData() ; //when there are non consumed data available, returns a non empty value
     void reset() ; //when all data has been retrieved
 };
 /* application */
 /* BEGIN */
 //given
 DataSource<char8_t> rawCharacters;
-AsciiTtyInputFromRawCharacters converter;
+AsciiVtInputFromRawCharacters converter;
 std::optionnal<IoError<?>> ioError = empty();
 
 while(converter.canAppend) {

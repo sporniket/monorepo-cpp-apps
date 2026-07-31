@@ -12,7 +12,7 @@
 #include <criterion/criterion.h>
 
 // project
-#include "cmspk/term/TtyInput.hpp"
+#include "cmspk/term/VtInput.hpp"
 
 // ================[ BEGIN common code ]==================
 class SameSingleOctetDataSource : public DataSource<char8_t> {
@@ -49,23 +49,23 @@ class SameSingleOctetDataSource : public DataSource<char8_t> {
 
 // TODO : inside namespace
 // ================[ BEGIN test suite ]==================
-Test(TtyInputSource, should_return_tty_null_on_reading_the_zero_octet) {
+Test(VtInputSource, should_return_vt_null_on_reading_the_zero_octet) {
     cr_assert(false);
 }
 
-Test(TtyInputSource, should_return_printable_characters) {
+Test(VtInputSource, should_return_printable_characters) {
     cr_assert(false);
 }
 
-Test(TtyInputSource, should_return_keys_on_recognizing_key_sequences) {
+Test(VtInputSource, should_return_keys_on_recognizing_key_sequences) {
     cr_assert(false);
 }
 
-Test(TtyInputSource, should_return_tty_report_on_recognizing_cursor_position_report) {
+Test(VtInputSource, should_return_vt_report_on_recognizing_cursor_position_report) {
     cr_assert(false);
 }
 
-Test(TtyInputSource, should_reuse_unconsumed_reads_from_the_character_data_source) {
+Test(VtInputSource, should_reuse_unconsumed_reads_from_the_character_data_source) {
     cr_assert(false);
 }
 

@@ -9,7 +9,7 @@
 find_library(LIBCRITERION criterion REQUIRED)
 
 # each module has its own folder
-add_subdirectory(tty-input)
+add_subdirectory(vt-input)
 
 # ---
 # Create the custom task `verify` that MUST be invoked to run this test suite.
@@ -17,6 +17,6 @@ add_subdirectory(tty-input)
 add_custom_target(
     verify
     DEPENDS
-    verify--tty-input
+    verify--vt-input
 )
 
