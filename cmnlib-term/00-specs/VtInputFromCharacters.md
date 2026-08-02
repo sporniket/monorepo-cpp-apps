@@ -8,36 +8,65 @@ since: 0.0.2
 
 # VtInputFromCharacters
 
-## Assumptions and definitions
+**The term "VT" is "Virtual Verminal"**.
 
-* **The term "VT" is "Virtual Verminal"**.
-* **The term _byte_ is banned**, unless the design is intently targetting the smallest addressable unit of the processing unit ; most of the time, it is an octet, but it is mere coincidence ; e.g. read https://software-dl.ti.com/ccs/esd/documents/c2000_byte-accesses-with-the-c28x-cpu.html
-* As a result of the previous statement, **this design is restricted to architectures where a byte is an octet**.
-* A **character**, as read from low level stdin, is a 8-bits, unsigned value, a.k.a. an octet.
-* We will use `char8_t` as the character type.
-* If possible, **supports 32-bits CPUs** 
+Converts a sequence of characters (`char8_t`) into a sequence of virtual terminal inputs.
 
-## Require
+Typical application : 
 
+```cpp
+// TODO make pop() returns an std::optional (empty when cannot pop)
+// TODO make push() returns an std::expected<void, VtInputFromCharactersError>
+
+// GIVEN
+VtInputFromCharacters converter ;
+converter.reset() ;
+static_assert(converter.canPop() == false, "converter.canPop() should be false after reset")
+static_assert(converter.canPush() == false, "converter.canPush() should be true after reset")
+
+// some inputs only need a single char
+converter.push('H') ; // converter.canPush() is false, converter.canPop() is true
+if (converter.canPop()) {
+  VtInput result = converter.pop() ; // contains the char8_t 'H'
+}
+
+// some input requires more
+converter.push(27); // converter.canPop() is false
+converter.push('['); // converter.canPop() is false
+converter.push('A'); // converter.canPop() is true
+if (converter.canPop()) {
+  VtInput result = converter.pop() ; // contains a VtInputKey VtInputKey::ARROW_UP
+}
+
+// It can be interrupted, in this case multi-character sequence matching is interrupted
+converter.push(27); // converter.canPop() is false
+converter.push('['); // converter.canPop() is false
+converter.abort(); // converter.canPop() is true
+if (converter.canPop()) {
+  VtInput result = converter.pop() ; // contains a VtInputKey VtInputKey::ESCAPE
+  VtInput result2 = converter.pop() ; // contains a char8_t '['
+}
+```
+
+## Requirements
+
+* [Specfication guidelines](../../README--specification-guidelines.md)
 * [VtInput](./VtInput.md)
 
-## Overview
 
-## Technical details
+## Behaviours
 
-## Tests
-
-### VtInputFromCharacters should return a Vt null on reading the zero octet
+### It should return a virtual terminal input NONE on reading an octet with value 0 or in range 28 to 32
 
 **given** VtInputFromCharacters has been reset
 
-**when** VtInputFromCharacters is fed with the single character zero (`0x00`)
+**when** VtInputFromCharacters is fed with the single character zero (`0x00`) or a character in range 28 to 32
 
 **then** VtInputFromCharacters does not accept characters anymore
 
 **then** the VtInputFromCharacters will return a `std::variant` containing a `VtInputNull`.
 
-### VtInputFromCharacters should return printable characters
+### It should return printable characters
 
 **For each characters _Chr_ (`char8_t`) in range(32,256) excluding 127**
 
@@ -49,7 +78,7 @@ since: 0.0.2
 
 **then** the VtInputFromCharacters will return a `std::variant` containing _Chr_.
 
-### VtInputFromCharacters should return keys on recognizing key sequences
+### It should return keys on recognizing key sequences
 
 **For each enum value _K_ in `VtInputKey`**
 
@@ -61,7 +90,7 @@ since: 0.0.2
 
 **then** the VtInputFromCharacters will return a `std::variant` containing _K_.
 
-### VtInputFromCharacters should return Vt report on recognizing cursor position report
+### It should return Vt report on recognizing cursor position report
 
 **given** VtInputFromCharacters has been reset
 
@@ -71,7 +100,7 @@ since: 0.0.2
 
 **then** the VtInputFromCharacters will return a `std::variant` containing the `VtInputReport` of type `CURSOR_POSITION`, with 2 arguments "24" and "80".
 
-### VtInputFromCharacters should fall back to single-character conversion when a sequence is finally not recognized
+### It should fall back to single-character conversion when a sequence is finally not recognized
 
 **given** VtInputFromCharacters has been reset
 
@@ -84,7 +113,7 @@ since: 0.0.2
 * a `std::variant` containing the `VtInputKey` value `ESCAPE` ;
 * a `std::variant` containing the printable character `A` ;
 
-### VtInputFromCharacters should start a new sequence match when the current sequence is broken by the next character
+### It should start a new sequence match when the current sequence is broken by the next character
 
 **given** VtInputFromCharacters has been reset
 
@@ -111,7 +140,7 @@ since: 0.0.2
 * a `std::variant` containing the `VtInputKey` value `ESCAPE` ;
 * a `std::variant` containing the printable character `A` ;
 
-### VtInputFromCharacters should fall back to single-character conversion when it is aborted
+### It should fall back to single-character conversion when it is aborted
 
 **given** VtInputFromCharacters has been reset and been fed with the character sequence "\x1b["
 
@@ -141,6 +170,8 @@ since: 0.0.2
 **then** the VtInputFromCharacters will return a `std::variant` containing `A`.
 
 
+## Technical details
+
 ---
 # sandbox
 
@@ -150,7 +181,7 @@ class AsciiVtInputFromRawCharacters {
     bool canAppend() ; // true when more data is needed to obtain a VtInput, false when data is available.
     void append(char8_t) ; //feeds the converter
     void abort() ; // any appended characters will be made available
-    bool hasData() ; //true as long as all the data has not be consumed (when finally there was nothing, all the chars can be retrieved)
+    bool canPop() ; //true as long as all the data has not be consumed (when finally there was nothing, all the chars can be retrieved)
     std::optional<AsciiVtInput> getData() ; //when there are non consumed data available, returns a non empty value
     void reset() ; //when all data has been retrieved
 };
@@ -170,7 +201,7 @@ while(converter.canAppend()) {
   }
   converter.append(nextChar) ;
 }
-while(converter.hasData()) {
+while(converter.canPop()) {
   return converter.getData() ; // imagine the host call in a loop.
 }
 if(ioError is not empty) {
