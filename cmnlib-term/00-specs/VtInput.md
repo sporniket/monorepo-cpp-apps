@@ -27,6 +27,7 @@ Specifies a representation of a virtual terminal input, that can be :
 * VtInputReportType
 * VtInputReport
 * VtInputNone
+* VtInput
 
 ### VtInputKey
 
@@ -60,4 +61,8 @@ Model of a Vt report, like the cursor position.
 An unprocessable input, like zero or any characters in the range 28 to 32.
 
 A VtInputNone contains the actual value, and will usually be ignored.
+
+### VtInput
+
+A `std::variant` that can contain either a `char8_t`, or a `VtInputNone`, or a `VtInputReport` or a `VtInputKey`.
 
