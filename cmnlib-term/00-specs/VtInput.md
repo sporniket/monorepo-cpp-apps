@@ -6,16 +6,24 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 since: 0.0.2
 ---
 
-# VtInput
+# VtInput -- data model
 
 ## Assumptions and definitions
 
-* **The term "VT" is "Virtual Verminal"**.
+### Terminology
+
+* **The term "VT" is for "Virtual Verminal"**.
+
+### Unit of data storage and memory model
+
+> _This part ought to be moved into a common specification guideline_
+
 * **The term _byte_ is banned**, unless the design is intently targetting the smallest addressable unit of the processing unit ; most of the time, it is an octet, but it is mere coincidence ; e.g. read https://software-dl.ti.com/ccs/esd/documents/c2000_byte-accesses-with-the-c28x-cpu.html
 * As a result of the previous statement, **this design is restricted to architectures where a byte is an octet**.
-* A **character**, as read from low level stdin, is a 8-bits, unsigned value, a.k.a. an octet.
-* We will use `char8_t` as the character type.
-* If possible, **supports 32-bits CPUs** 
+* An **octet** is a unit of storage (a bundle of 8 bits). The representation of an actual stored value is an unsigned number in the range 0 (included) to 256 (excluded).
+* A **character**, as read from low level stdin, **is an octet**.
+* We will use the standard `char8_t` as the character type.
+* If possible, **this design will supports 32-bits CPUs**
 
 ## Overview
 
@@ -23,15 +31,15 @@ Specifies a representation of a virtual terminal input, that can be :
 
 * either a _report_, usually after sending an output request to the Vt output, e.g. a report on the cursor position;
 * or a _key stroke_, either encoded as a single char (1 to 27, 127), or as an escape sequence (`"\x1b[A"` for cursor up)
-* or the null byte (zero), that will be ignored
 * or a printable character (either a single-octet printable character, or the first octet of a multi-octets character, depending of the character set encoding).
+* or a none of the formers, and as such will be ignored.
 
 ## Technical details
 
 * VtInputKey
-* VtInputReporVtpe
+* VtInputReportType
 * VtInputReport
-* VtInputNull
+* VtInputNone
 
 ### VtInputKey
 
@@ -41,7 +49,7 @@ Identifies a key stroke represented by a Vt sequence.
   * `HTAB` and `RETURN` replace `CTRL_I` and `CTRL_M`, respectively
 * By "design", any sequence of more than 1 octet mapped to a key **will** have a 32-bits value with the higher 16-bits value being the introducting character sequence (e.g. the CSI `escape+'['`), in other words, a CSI introduced key will have a value in the range `0x1b5b0000~0x1b5bffff`. **The actual values of the constants are subject to change at any time**
 
-### VtInputReporVtpe
+### VtInputReportType
 
 Identifies a Vt report message type.
 
@@ -57,14 +65,13 @@ Model of a Vt report, like the cursor position.
 
 |VtInputReport|
 |---|
-|+`VtInputReporVtpe` type|
+|+`VtInputReportType` type|
 |+`std::vector<std::basic_string<char8_t>>` parameters|
 
-### VtInputNull
+### VtInputNone
 
-An empty type, to be returned when the datasource get zero (0), which should not happen in a terminal input.
+An unprocessable input, like zero or any characters in the range 28 (included) to 32 (excluded).
 
-## Tests
+A VtInputNone contains the actual value, and will usually be ignored.
 
-_None, this is a module of models_
 
