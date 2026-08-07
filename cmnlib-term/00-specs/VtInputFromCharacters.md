@@ -8,7 +8,7 @@ since: 0.0.2
 
 # VtInputFromCharacters
 
-**The term "VT" is "Virtual Verminal"**.
+**The term "VT" is "Virtual Terminal"**.
 
 Converts a sequence of characters (`char8_t`) into a sequence of virtual terminal inputs.
 
@@ -58,15 +58,21 @@ if (converter.canPop()) {
 
 ### It should return a virtual terminal input NONE on reading an octet with value 0 or in range 28 to 32
 
+**For each characters _Chr_ (`char8_t`) in [0,28,29,30,31]**
+
 **given** VtInputFromCharacters has been reset
 
-**when** VtInputFromCharacters is fed with the single character zero (`0x00`) or a character in range 28 to 32
+**when** VtInputFromCharacters is fed with the single character _Chr_
 
 **then** VtInputFromCharacters does not accept characters anymore
 
+**then** VtInputFromCharacters does have data
+
 **then** the VtInputFromCharacters will return a `std::variant` containing a `VtInputNull`.
 
-### It should return printable characters
+**then** VtInputFromCharacters does not have data
+
+### It should return printable characters on reading an octet with value in range 32 to 256 excluding 127
 
 **For each characters _Chr_ (`char8_t`) in range(32,256) excluding 127**
 
@@ -76,11 +82,31 @@ if (converter.canPop()) {
 
 **then** VtInputFromCharacters does not accept characters anymore
 
+**then** VtInputFromCharacters does have data
+
 **then** the VtInputFromCharacters will return a `std::variant` containing _Chr_.
 
-### It should return keys on recognizing key sequences
+**then** VtInputFromCharacters does not have data
 
-**For each enum value _K_ in `VtInputKey`**
+### It should return keys on reading an octet with value 127 or in range 1 to 26
+
+**For each characters _Chr_ (`char8_t`) in [1,..,26,127]**
+
+**given** VtInputFromCharacters has been reset
+
+**when** VtInputFromCharacters is fed with the single character _Chr_
+
+**then** VtInputFromCharacters does not accept characters anymore
+
+**then** VtInputFromCharacters does have data
+
+**then** the VtInputFromCharacters will return a `std::variant` containing the corresponding VtInputKey.
+
+**then** VtInputFromCharacters does not have data
+
+### It should return keys on recognizing a multiple-characters sequence
+
+**For each enum value _K_ in `VtInputKey` that is matched by a sequence of at least 2 characters**
 
 **given** VtInputFromCharacters has been reset
 
@@ -88,7 +114,13 @@ if (converter.canPop()) {
 
 **then** VtInputFromCharacters does not accept characters anymore
 
+**then** VtInputFromCharacters does have data
+
 **then** the VtInputFromCharacters will return a `std::variant` containing _K_.
+
+**then** VtInputFromCharacters does not have data
+
+> TODO proof read from this point onward
 
 ### It should return Vt report on recognizing cursor position report
 
