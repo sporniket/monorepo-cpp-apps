@@ -8,7 +8,7 @@ since: 0.0.2
 
 # VtInput -- data model
 
-> **The term "VT" is for "Virtual Verminal"**.
+> **The term "VT" is for "Virtual Terminal"**.
 
 Specifies a representation of a virtual terminal input, that can be :
 
