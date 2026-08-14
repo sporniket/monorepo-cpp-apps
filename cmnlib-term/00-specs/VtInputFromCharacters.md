@@ -15,36 +15,33 @@ Converts a sequence of characters (`char8_t`) into a sequence of virtual termina
 Typical application : 
 
 ```cpp
-// TODO make pop() returns an std::optional (empty when cannot pop)
-// TODO make push() returns an std::expected<void, VtInputFromCharactersError>
-
 // GIVEN
 VtInputFromCharacters converter ;
 converter.reset() ;
-static_assert(converter.canPop() == false, "converter.canPop() should be false after reset")
-static_assert(converter.canPush() == false, "converter.canPush() should be true after reset")
+static_assert(converter.hasData() == false, "converter.canPop() should be false after reset")
+static_assert(converter.isAcceptingCharacters() == false, "converter.canPush() should be true after reset")
 
 // some inputs only need a single char
-converter.push('H') ; // converter.canPush() is false, converter.canPop() is true
-if (converter.canPop()) {
-  VtInput result = converter.pop() ; // contains the char8_t 'H'
+converter.append('H') ; // converter.canPush() is false, converter.canPop() is true
+if (converter.hasData()) {
+  std::optional<VtInput> result = converter.getData() ; // is present and contains the char8_t 'H'
 }
 
 // some input requires more
-converter.push(27); // converter.canPop() is false
-converter.push('['); // converter.canPop() is false
-converter.push('A'); // converter.canPop() is true
-if (converter.canPop()) {
-  VtInput result = converter.pop() ; // contains a VtInputKey VtInputKey::ARROW_UP
+converter.append(27); // converter.canPop() is false
+converter.append('['); // converter.canPop() is false
+converter.append('A'); // converter.canPop() is true
+if (converter.hasData()) {
+  std::optional<VtInput> result = converter.getData() ; // is present and contains a VtInputKey VtInputKey::ARROW_UP
 }
 
 // It can be interrupted, in this case multi-character sequence matching is interrupted
-converter.push(27); // converter.canPop() is false
-converter.push('['); // converter.canPop() is false
+converter.append(27); // converter.canPop() is false
+converter.append('['); // converter.canPop() is false
 converter.abort(); // converter.canPop() is true
-if (converter.canPop()) {
-  VtInput result = converter.pop() ; // contains a VtInputKey VtInputKey::ESCAPE
-  VtInput result2 = converter.pop() ; // contains a char8_t '['
+if (converter.hasData()) {
+  std::optional<VtInput> result = converter.getData() ; // is present and contains a VtInputKey VtInputKey::ESCAPE
+  std::optional<VtInput> result2 = converter.getData() ; // is present and contains a char8_t '['
 }
 ```
 
@@ -68,7 +65,7 @@ if (converter.canPop()) {
 
 **then** VtInputFromCharacters does have data
 
-**then** the VtInputFromCharacters will return a `std::variant` containing a `VtInputNull`.
+**then** the VtInputFromCharacters will return a `std::variant` containing a `VtInputNone`.
 
 **then** VtInputFromCharacters does not have data
 
@@ -120,8 +117,6 @@ if (converter.canPop()) {
 
 **then** VtInputFromCharacters does not have data
 
-> TODO proof read from this point onward
-
 ### It should return Vt report on recognizing cursor position report
 
 **given** VtInputFromCharacters has been reset
@@ -130,7 +125,11 @@ if (converter.canPop()) {
 
 **then** VtInputFromCharacters does not accept characters anymore
 
+**then** VtInputFromCharacters does have data
+
 **then** the VtInputFromCharacters will return a `std::variant` containing the `VtInputReport` of type `CURSOR_POSITION`, with 2 arguments "24" and "80".
+
+**then** VtInputFromCharacters does not have data
 
 ### It should fall back to single-character conversion when a sequence is finally not recognized
 
@@ -140,10 +139,15 @@ if (converter.canPop()) {
 
 **then** VtInputFromCharacters does not accept characters anymore
 
-**then** the VtInputFromCharacters will containing the following sequence of data (`std::variant`) : 
+**then** VtInputFromCharacters does have data
 
-* a `std::variant` containing the `VtInputKey` value `ESCAPE` ;
-* a `std::variant` containing the printable character `A` ;
+**then** the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ESCAPE`
+
+**then** VtInputFromCharacters does have data
+
+**then** the VtInputFromCharacters will return a `std::variant` containing the printable character `A`
+
+**then** VtInputFromCharacters does not have data
 
 ### It should start a new sequence match when the current sequence is broken by the next character
 
@@ -153,13 +157,21 @@ if (converter.canPop()) {
 
 **then** VtInputFromCharacters does not accept characters anymore
 
-**then** the VtInputFromCharacters will containing the following sequence of data (`std::variant`) : 
+**then** VtInputFromCharacters does have data
 
-* a `std::variant` containing the `VtInputKey` value `ESCAPE` ;
-* a `std::variant` containing the printable character `[` ;
-* a `std::variant` containing the `VtInputKey` value `ARROW_UP` ;
+**then** the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ESCAPE`
 
-### VtInputFromCharacters give access to available data while still accepting characters for the current sequence
+**then** VtInputFromCharacters does have data
+
+**then** the VtInputFromCharacters will return a `std::variant` containing the printable character `[` ;
+
+**then** VtInputFromCharacters does have data
+
+**then** the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ARROW_UP` ;
+
+**then** VtInputFromCharacters does not have data
+
+### It should give access to available data from the broken previous sequence while still accepting characters for the current sequence
 
 **given** VtInputFromCharacters has been reset
 
@@ -167,12 +179,17 @@ if (converter.canPop()) {
 
 **then** VtInputFromCharacters still accept characters
 
-**then** the VtInputFromCharacters will containing the following sequence of data (`std::variant`) : 
+**then** VtInputFromCharacters does have data
 
-* a `std::variant` containing the `VtInputKey` value `ESCAPE` ;
-* a `std::variant` containing the printable character `A` ;
+**then** the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ESCAPE`
 
-### It should fall back to single-character conversion when it is aborted
+**then** VtInputFromCharacters does have data
+
+**then** the VtInputFromCharacters will return  a `std::variant` containing the printable character `[`
+
+**then** VtInputFromCharacters does not have data
+
+### It should fall back to single-character conversion when it is aborted in the middle of a multi-octets sequence
 
 **given** VtInputFromCharacters has been reset and been fed with the character sequence "\x1b["
 
@@ -180,10 +197,15 @@ if (converter.canPop()) {
 
 **then** VtInputFromCharacters does not accept characters anymore
 
-**then** the VtInputFromCharacters will containing the following sequence of data (`std::variant`) : 
+**then** VtInputFromCharacters does have data
 
-* a `std::variant` containing the `VtInputKey` value `ESCAPE` ;
-* a `std::variant` containing the printable character `[` ;
+**then** the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ESCAPE` ;
+
+**then** VtInputFromCharacters does have data
+
+**then** the VtInputFromCharacters will return a `std::variant` containing the printable character `[` ;
+
+**then** VtInputFromCharacters does not have data
 
 ### VtInputFromCharacters clear its internal state when it is reset
 
@@ -203,6 +225,30 @@ if (converter.canPop()) {
 
 
 ## Technical details
+
+```cpp
+// Enums of errors
+enum VtInputFromCharactersError {
+  CANNOT_ACCEPT_ANY_NEW_CHARACTER
+};
+
+//Interface
+class VtInputFromCharacters{
+
+  // feeding
+  bool isAcceptingCharacters();
+  std::expected<void, VtInputFromCharactersError> append(char8_t character);
+
+  // getting data
+  bool hasData();
+  std::optional<VtInput> getData();
+
+  // maintenance
+  void abort();
+  void reset(); 
+}
+
+```
 
 ---
 # sandbox
