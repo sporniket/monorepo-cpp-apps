@@ -8,15 +8,28 @@ since: 0.0.2
 
 # VtInputSource
 
-An adapter of a character data source that presents itself as a data source of virtual terminal inputs.
+**The term "VT" is "Virtual Terminal".**
 
-A `VtInputSource` is plugged to a character data source. 
+As the name implies, an data source of `VtInput`.
 
-When instructed to return the next data, it reads as much data needed in order to match one of the 4 possible outcomes.
+Typical application : 
 
-When trying to read a multi-octets sequence, and when it matches, then all the octets of the sequence are _consumed_. The next data will read the data source.
+```cpp
+static std::shared<DataSource<char8_t>> usuallyStandardInput ;
+static VtInputSource myInput(usuallyStandardInput) ;
+static bool running = true;
 
-When trying to read a multi-octets sequence, and when it does not matches, then all the octets before the last one are converted to single-octet Vt input and buffered, while the last octet is either a single-octet Vt input, or the first octet of a potential multi-octets Vt input ; in the former case the last octet is converted to a single-octet Vt input and buffered after the others Vt inputs ; in the later case, a new attempt at reading a multi-octet Vt input is performed.
+// ... main loop
+while(running) {
+  std::expected<VtInput,BasicIoError<char8_t>> nextInput = myInput.next() ;
+  if (!nextInput) { continue ; }
+  
+  //... process the actual value of myInput
+}
+
+```
+
+Under the hood, it reads from a provided data source of raw characters `char8_t` and manages a `VtInputFromCharacters`.
 
 ## Requirements
 
@@ -27,6 +40,14 @@ When trying to read a multi-octets sequence, and when it does not matches, then 
 
 
 ## Behaviours
+
+> TO BE REWRITTEN
+>
+> * It should process single-octet values (1~26, 32~255 except 127)
+> * It should process multi-octets sequences (e.g. page up, cursor location report)
+> * It should stop multi-octets sequence matching when the datasource cannot provides the next character while processing such sequence (i.e. a datasource always have all the octets available for a multi-octets sequence)
+>
+> START FROM HERE
 
 ### It should return a Vt null on reading the zero octet
 
