@@ -49,6 +49,28 @@ Under the hood, it reads from a provided data source of raw characters `char8_t`
 >
 > START FROM HERE
 
+### It should process single-octet values -- unknown values
+
+> This is the fall-back behaviour.
+> 
+> The list [0,28,29,30,31] is what remains unknown when all other behaviours have been implemented.
+
+**given** a character data source that will return the following list of characters : `[0,28,29,30,31]`.
+
+**when** reading the next VtInput with `next()` 5 times.
+
+**then** the VtInputSource will return five times a `std::variant` containing a `VtInputUnknown` with the value of the char.
+
+### It should process single-octet values -- printable characters and keys
+
+**given** a character data source that will return a mixed list of single-octet printable characters and single-octet keys.
+
+**when** reading the next VtInput with `next()` for the same number of elements.
+
+**then** the VtInputSource will return for each item a `std::variant` containing either the suitable `char8_t` or the `VtInputKey` with the value of the key.
+
+> ARRIVED HERE
+
 ### It should return a Vt null on reading the zero octet
 
 **given** a character data source that will return zero.
