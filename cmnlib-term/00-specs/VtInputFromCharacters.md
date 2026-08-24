@@ -53,7 +53,11 @@ if (converter.hasData()) {
 
 ## Behaviours
 
-### It should return an unknown virtual terminal input on reading an octet with value 0 or in range 28 to 32
+### It should return an unknown virtual terminal input on reading an octet that is not recognizable (i.e. not a key, a printable, ...)
+
+> This is the fall-back behaviour.
+>
+> The list [0,28,29,30,31] is what remains unknown when all other behaviours have been implemented.
 
 **For each characters _Chr_ (`char8_t`) in [0,28,29,30,31]**
 
