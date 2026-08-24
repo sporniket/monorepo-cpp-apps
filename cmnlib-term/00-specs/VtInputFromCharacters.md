@@ -53,7 +53,7 @@ if (converter.hasData()) {
 
 ## Behaviours
 
-### It should return a virtual terminal input NONE on reading an octet with value 0 or in range 28 to 32
+### It should return an unknown virtual terminal input on reading an octet with value 0 or in range 28 to 32
 
 **For each characters _Chr_ (`char8_t`) in [0,28,29,30,31]**
 
@@ -65,7 +65,7 @@ if (converter.hasData()) {
 
 **then** VtInputFromCharacters does have data
 
-**then** the VtInputFromCharacters will return a `std::variant` containing a `VtInputNone`.
+**then** the VtInputFromCharacters will return a `std::variant` containing a `VtInputUnkown`.
 
 **then** VtInputFromCharacters does not have data
 
