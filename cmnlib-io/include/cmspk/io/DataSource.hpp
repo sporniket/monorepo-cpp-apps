@@ -9,6 +9,7 @@
 #define __CMSPK__IO__DATA_SOURCE_HPP__
 
 // required
+#include <expected>
 #include "cmspk/io/IoError.hpp"
 
 namespace cmspk::io {
