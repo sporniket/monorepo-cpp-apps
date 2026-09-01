@@ -15,12 +15,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 message("export compile command is ${CMAKE_EXPORT_COMPILE_COMMANDS}")
 
 # The test suite is implemented in a dedicated source folder.
+add_subdirectory(src-tests)
+
+# The demos suite is implemented in a dedicated source folder.
 add_subdirectory(src-demos)
 
 # Collect files for clang-format/clang-tidy tasks
 file(GLOB_RECURSE FORMATTABLE_SOURCES
        ${PROJECT_SOURCE_DIR}/include/*.hpp
        ${PROJECT_SOURCE_DIR}/src/*.cpp
+       ${PROJECT_SOURCE_DIR}/src-tests/*.cpp
        ${PROJECT_SOURCE_DIR}/src-demos/*.cpp
 )
 

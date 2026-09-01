@@ -240,11 +240,11 @@ enum VtInputFromCharactersError {
 class VtInputFromCharacters{
 
   // feeding
-  bool isAcceptingCharacters();
+  bool canAppend();
   std::expected<void, VtInputFromCharactersError> append(char8_t character);
 
   // getting data
-  bool hasData();
+  bool canGetData();
   std::optional<VtInput> getData();
 
   // maintenance
