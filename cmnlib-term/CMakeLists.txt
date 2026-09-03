@@ -45,6 +45,7 @@ add_custom_target(prettier
 # Linter
 add_custom_target(linter
     COMMAND clang-tidy-19
+    --extra-arg=-std=c++23
     --extra-arg=-I${PROJECT_SOURCE_DIR}/include
     ${FORMATTABLE_SOURCES}
     DEPENDS prettier # refresh-compile-db
