@@ -59,7 +59,7 @@ if (converter.hasData()) {
 >
 > The list [0,28,29,30,31] is what remains unknown when all other behaviours have been implemented.
 
-**For each characters _Chr_ (`char8_t`) in [0,28,29,30,31]**
+**For any character _Chr_ (`char8_t`) in [0,28,29,30,31]**
 
 **given** VtInputFromCharacters has been reset
 
@@ -75,7 +75,7 @@ if (converter.hasData()) {
 
 ### It should return printable characters on reading an octet with value in range 32 to 256 excluding 127
 
-**For each characters _Chr_ (`char8_t`) in range(32,256) excluding 127**
+**For any character _Chr_ (`char8_t`) in range(32,256) excluding 127**
 
 **given** VtInputFromCharacters has been reset
 
@@ -91,7 +91,7 @@ if (converter.hasData()) {
 
 ### It should return keys on reading an octet with value 127 or in range 1 to 26
 
-**For each characters _Chr_ (`char8_t`) in [1,..,26,127]**
+**For any character _Chr_ (`char8_t`) in [1,..,26,127]**
 
 **given** VtInputFromCharacters has been reset
 
@@ -107,7 +107,7 @@ if (converter.hasData()) {
 
 ### It should return keys on recognizing a multiple-characters sequence
 
-**For each enum value _K_ in `VtInputKey` that is matched by a sequence of at least 2 characters**
+**For any enum value _K_ in `VtInputKey` that is matched by a sequence of at least 2 characters**
 
 **given** VtInputFromCharacters has been reset
 
