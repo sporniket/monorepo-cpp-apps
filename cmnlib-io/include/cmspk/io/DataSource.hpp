@@ -23,6 +23,7 @@ namespace cmspk::io {
 template <class T, class CharT>
 class BasicDataSource {
   public:
+    BasicDataSource() = default;
     virtual std::expected<T, BasicIoError<CharT>> next() = 0;
     virtual bool hasNext() { return true; }  // override to avoid a read expected to fail
 
