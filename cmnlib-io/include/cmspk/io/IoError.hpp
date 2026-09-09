@@ -9,6 +9,7 @@
 #define __CMSPK__IO__IO_ERROR_HPP__
 
 #include <string>
+#include <vector>
 
 namespace cmspk::io {
 // ================[ CODE BEGINS ]================
