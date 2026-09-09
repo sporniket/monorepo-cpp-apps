@@ -33,7 +33,11 @@ class VtInputFromCharacters {
 
     // getting data
     bool canGetData() { return !!data; }
-    std::optional<VtInput> getData() { return data; }
+    std::optional<VtInput> getData() {
+        std::optional<VtInput> result(data);
+        data = std::nullopt;
+        return result;
+    }
 
     // maintenance
     void abort() {}

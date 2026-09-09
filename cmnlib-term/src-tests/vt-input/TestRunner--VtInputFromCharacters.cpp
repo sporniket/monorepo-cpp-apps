@@ -20,7 +20,6 @@
 // ================[ BEGIN common code ]==================
 // ================[ END common code ]==================
 
-// TODO : inside namespace
 // ================[ BEGIN test suite ]==================
 // Parameterized tests are a hassle, see it later
 Test(VtInputFromCharacters, should_return_an_unknown_virtual_terminal_input_on_reading_an_octet_that_is_not_recognizable) {
@@ -37,6 +36,7 @@ Test(VtInputFromCharacters, should_return_an_unknown_virtual_terminal_input_on_r
         cmspk::term::VtInputUnknown vtu = std::get<cmspk::term::VtInputUnknown>(*vtin);
         char8_t raw = vtu.rawValue;
         cr_assert((c == raw), "Failed for input value %d", (uint8_t)c);
+        cr_assert(not(dut.canGetData()), "Failed for input value %d", (uint8_t)c);
     }
 }
 Test(VtInputFromCharacters, for_now_should_return_an_unknown_virtual_terminal_input_on_reading_any_octet) {
@@ -53,6 +53,7 @@ Test(VtInputFromCharacters, for_now_should_return_an_unknown_virtual_terminal_in
         cmspk::term::VtInputUnknown vtu = std::get<cmspk::term::VtInputUnknown>(*vtin);
         char8_t raw = vtu.rawValue;
         cr_assert((c == raw), "Failed for input value %d", (uint8_t)c);
+        cr_assert(not(dut.canGetData()), "Failed for input value %d", (uint8_t)c);
     }
 }
 
