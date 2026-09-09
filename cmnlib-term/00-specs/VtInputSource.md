@@ -10,26 +10,28 @@ since: 0.0.2
 
 **The term "VT" is "Virtual Terminal".**
 
-As the name implies, an data source of `VtInput`.
+As the name implies, a data source of `cmspk::term::VtInput` _(NOT Copiable)_.
 
 Typical application : 
 
 ```cpp
-static std::shared<DataSource<char8_t>> usuallyStandardInput ;
-static VtInputSource myInput(usuallyStandardInput) ;
-static bool running = true;
+std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>> usuallyStandardInput ; // TO BE GIVEN 
+cmspk::term::VtInputSource myInput(usuallyStandardInput) ;
 
 // ... main loop
+bool running = true;
 while(running) {
-  std::expected<VtInput,BasicIoError<char8_t>> nextInput = myInput.next() ;
+  std::expected<cmspk::term::VtInput,cmspk::io::BasicIoError<char8_t>> nextInput = myInput.next() ;
   if (!nextInput) { continue ; }
   
   //... process the actual value of myInput
+  if (std::holds_alternative<cmspk::term::VtInputUnknown>(*nextInput)) { continue; }
+  // etc...
 }
 
 ```
 
-Under the hood, it reads from a provided data source of raw characters `char8_t` and manages a `VtInputFromCharacters`.
+Under the hood, it reads from a provided data source of raw characters `char8_t` and manages a `cmspk::term::VtInputFromCharacters`.
 
 ## Requirements
 

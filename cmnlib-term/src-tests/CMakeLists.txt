@@ -17,6 +17,6 @@ add_subdirectory(vt-input)
 add_custom_target(
     verify
     DEPENDS
-    verify--vt-input-from-characters
+    verify--vt-input
 )
 

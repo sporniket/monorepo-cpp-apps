@@ -20,7 +20,42 @@ namespace cmspk::term {
 // Enums of errors
 enum class VtInputFromCharactersError { CANNOT_ACCEPT_ANY_NEW_CHARACTER };
 
-// Interface
+/************************************************
+Converts a sequence of characters (`char8_t`) into a sequence of virtual terminal inputs.
+
+Typical application :
+
+```cpp
+// GIVEN
+VtInputFromCharacters converter ;
+converter.reset() ;
+static_assert(converter.canGetData() == false, "converter.canPop() should be false after reset")
+static_assert(converter.canAppend() == false, "converter.canPush() should be true after reset")
+
+// some inputs only need a single char
+converter.append('H') ; // converter.canPush() is false, converter.canPop() is true
+if (converter.canGetData()) {
+  std::optional<VtInput> result = converter.getData() ; // is present and contains the char8_t 'H'
+}
+
+// some input requires more
+converter.append(27); // converter.canPop() is false
+converter.append('['); // converter.canPop() is false
+converter.append('A'); // converter.canPop() is true
+if (converter.canGetData()) {
+  std::optional<VtInput> result = converter.getData() ; // is present and contains a VtInputKey VtInputKey::ARROW_UP
+}
+
+// It can be interrupted, in this case multi-character sequence matching is interrupted
+converter.append(27); // converter.canPop() is false
+converter.append('['); // converter.canPop() is false
+converter.abort(); // converter.canPop() is true
+if (converter.canGetData()) {
+  std::optional<VtInput> result = converter.getData() ; // is present and contains a VtInputKey VtInputKey::ESCAPE
+  std::optional<VtInput> result2 = converter.getData() ; // is present and contains a char8_t '['
+}
+```
+************************************************/
 class VtInputFromCharacters {
   public:
     // feeding
