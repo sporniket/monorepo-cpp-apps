@@ -8,9 +8,11 @@
 #ifndef __CMSPK__TERM__VTINPUTFROMCHARACTERS_HPP__
 #define __CMSPK__TERM__VTINPUTFROMCHARACTERS_HPP__
 
+// standard libs
 #include <expected>
 #include <optional>
 
+// project
 #include "cmspk/term/VtInput.hpp"
 
 namespace cmspk::term {
