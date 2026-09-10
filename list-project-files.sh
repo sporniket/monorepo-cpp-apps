@@ -12,4 +12,4 @@ fi
 
 echo "Listing files from '$1'..."
 
-find ./$1 -type f | grep -v "/.git/" | grep -v ".git\$"| grep -v "/build/"
+find $1 -type f | grep -v "/.git/" | grep -v ".git\$"| grep -v "/build/"
