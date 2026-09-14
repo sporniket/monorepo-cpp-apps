@@ -31,16 +31,16 @@ class AsciiCharSourceFromStdRead : public cmspk::io::BasicDataSource<char8_t, ch
         : fileDescriptorId(fileDescriptorId), readImpl(readImpl) {}
     virtual std::expected<char8_t, cmspk::io::IoErrorAscii> next() {
         if (irrecoverable) {
-            return std::unexpected(AsciiCharSourceFromStdRead::irrecoverable_error);
+            return std::unexpected(AsciiCharSourceFromStdRead::irrecoverable_error());
         }
         int result = readImpl(fileDescriptorId, &c, 1);
         int savedErrno = errno;
         if (result == -1) {
             if (savedErrno != EAGAIN && savedErrno != EWOULDBLOCK) {
                 irrecoverable = true;
-                return std::unexpected(AsciiCharSourceFromStdRead::irrecoverable_error);
+                return std::unexpected(AsciiCharSourceFromStdRead::irrecoverable_error());
             }
-            return std::unexpected(not_ready_error);
+            return std::unexpected(AsciiCharSourceFromStdRead::not_ready_error());
         }
         return c;
     }
@@ -72,8 +72,8 @@ class AsciiCharSourceFromStdRead : public cmspk::io::BasicDataSource<char8_t, ch
     char8_t c;
     bool irrecoverable = false;
     std::function<ssize_t(int, void*, size_t)> readImpl;
-    cmspk::io::IoErrorAscii irrecoverable_error{.type = cmspk::io::IoErrorType::BAD, .message = (const char8_t*)"bad.state", .details = {}};
-    cmspk::io::IoErrorAscii not_ready_error{.type = cmspk::io::IoErrorType::NOT_READY, .message = (const char8_t*)"try.later", .details = {}};
+    static const cmspk::io::IoErrorAscii irrecoverable_error() { return {.type = cmspk::io::IoErrorType::BAD, .message = u8"bad.state", .details = {}}; }
+    static const cmspk::io::IoErrorAscii not_ready_error() { return {.type = cmspk::io::IoErrorType::NOT_READY, .message = u8"try.later", .details = {}}; }
 };
 // END To be moved
 
