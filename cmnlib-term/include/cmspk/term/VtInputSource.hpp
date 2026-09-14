@@ -76,8 +76,7 @@ class VtInputSource : public cmspk::io::BasicDataSource<cmspk::term::VtInput, ch
             return std::unexpected(*error);
         }
         // should not happen
-        return std::unexpected(
-            cmspk::io::BasicIoError<char8_t>{.type = cmspk::io::IoErrorType::NOT_READY, .message = u8"not.ready", .details = {}});
+        return std::unexpected(cmspk::io::BasicIoError<char8_t>{.type = cmspk::io::IoErrorType::NOT_READY, .message = u8"not.ready", .details = {}});
     }
     virtual bool hasNext() { return converter->canGetData() || converter->canAppend() || source->hasNext(); }
 
