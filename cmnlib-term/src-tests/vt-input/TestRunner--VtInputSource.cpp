@@ -30,8 +30,7 @@ class DataSourceFromSequence : public cmspk::io::BasicDataSource<char8_t, char8_
     DataSourceFromSequence(std::vector<char8_t> sequence) : sequence(sequence) { cursor = this->sequence.begin(); }
     virtual std::expected<char8_t, cmspk::io::IoErrorAscii> next() {
         if (!hasNext()) {
-            return std::unexpected(
-                cmspk::io::IoErrorAscii{.type = cmspk::io::IoErrorType::END_OF_DATA, .message = (const char8_t*)"end.of.file", .details = {}});
+            return std::unexpected(cmspk::io::IoErrorAscii{.type = cmspk::io::IoErrorType::END_OF_DATA, .message = u8"end.of.file", .details = {}});
         }
         char8_t result = *cursor;
         ++cursor;
