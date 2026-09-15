@@ -41,7 +41,7 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=11
+current_page=0
 EOF
 
 ### --- BEGIN generate the list of session files (all the files) ---
