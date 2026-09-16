@@ -55,23 +55,33 @@ Under the hood, it reads from a provided data source of raw characters `char8_t`
 
 > This is the fall-back behaviour.
 > 
-> The list [0,28,29,30,31] is what remains unknown when all other behaviours have been implemented.
+> The list [28,29,30,31] is what remains unknown when all other behaviours have been implemented.
 
-**given** a character data source that will return the following list of characters : `[0,28,29,30,31]`.
+**given** a character data source that will return the sequence : `[28,29,30,31]`.
 
-**when** reading the next VtInput with `next()` 5 times.
+**given** the VtInputSource under test is plugged to that character data source.
 
-**then** the VtInputSource will return five times a `std::variant` containing a `VtInputUnknown` with the value of the char.
+**when** reading the next VtInput with `next()` as many time as the length of the sequence.
+
+**then** each time the VtInputSource will return a `std::variant` containing a `VtInputUnknown` having the expected `rawValue`.
+
+**then** reading the next VtInput returns and end of file error.
+
 
 ### It should process single-octet values -- printable characters and keys
 
-**given** a character data source that will return a mixed list of single-octet printable characters and single-octet keys.
+**given** a character data source that will return a mixed list of single-octet printable characters and single-octet keys (except ESCAPE).
 
-**when** reading the next VtInput with `next()` for the same number of elements.
+**given** the VtInputSource under test is plugged to that character data source.
 
-**then** the VtInputSource will return for each item a `std::variant` containing either the suitable `char8_t` or the `VtInputKey` with the value of the key.
+**when** reading the next VtInput with `next()` as many time as the length of the sequence.
+
+**then** the VtInputSource will return for each item a `std::variant` containing the expected `char8_t` or the `VtInputKey`.
+
+**then** reading the next VtInput returns and end of file error.
 
 > ARRIVED HERE
+
 
 ### It should return a Vt null on reading the zero octet
 
@@ -80,6 +90,7 @@ Under the hood, it reads from a provided data source of raw characters `char8_t`
 **when** reading the next VtInput with `next()`
 
 **then** the VtInputSource will return a `std::variant` containing a `VtInputNull`.
+
 
 ### It should return printable characters
 
@@ -91,6 +102,7 @@ Under the hood, it reads from a provided data source of raw characters `char8_t`
 
 **then** the VtInputSource will return a `std::variant` containing the char8_t `Chr`.
 
+
 ### It should return keys on recognizing key sequences
 
 **For each enum value `K` in `VtInputKey`**
@@ -101,6 +113,7 @@ Under the hood, it reads from a provided data source of raw characters `char8_t`
 
 **then** the VtInputSource will return a `std::variant` containing the `VtInputKey` `Ks`.
 
+
 ### It should return Vt report on recognizing cursor position report
 
 **given** a character data source that will return the sequence "\x1b[24;80R"
@@ -108,6 +121,7 @@ Under the hood, it reads from a provided data source of raw characters `char8_t`
 **when** reading the next VtInput with `next()`
 
 **then** the VtInputSource will return a `std::variant` containing the `VtInputReport` of type `CURSOR_POSITION`, with 2 arguments "24" and "80".
+
 
 ### It should buffer single-octet Vt inputs when a sequence is interrupted by an error.
 
