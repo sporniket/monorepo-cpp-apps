@@ -35,6 +35,7 @@ Identifies a key stroke represented by a Vt sequence.
 
 * By a "happy coïncidence", the numeric value of `CTRL + letter` and some special key (`RETURN`, `HTAB`, `ESCAPE`, and `BACKSPACE`) **will** be the value of their single octet representation in Vt.
   * `HTAB` and `RETURN` replace `CTRL_I` and `CTRL_M`, respectively
+  * `CTRL_SPACE` has numeric value zero.
 * By "design", any sequence of more than 1 octet mapped to a key **will** have a 32-bits value with the higher 16-bits value being the introducting character sequence (e.g. the CSI `escape+'['`), in other words, a CSI introduced key will have a value in the range `0x1b5b0000~0x1b5bffff`. **The actual values of the constants are subject to change at any time**
 
 ### VtInputReportType

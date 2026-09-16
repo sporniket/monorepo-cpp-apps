@@ -57,9 +57,11 @@ if (converter.hasData()) {
 
 > This is the fall-back behaviour.
 >
-> The list [0,28,29,30,31] is what remains unknown when all other behaviours have been implemented.
+> The list [28,29,30,31] is what remains unknown when all other behaviours have been implemented.
+>
+> 0 (zero) was in the list, it turns out it should be mapped to CTRL+SPACE.
 
-**For any character _Chr_ (`char8_t`) in [0,28,29,30,31]**
+**For any character _Chr_ (`char8_t`) in [28,29,30,31]**
 
 **given** VtInputFromCharacters has been reset
 
@@ -89,9 +91,9 @@ if (converter.hasData()) {
 
 **then** VtInputFromCharacters does not have data
 
-### It should return keys on reading an octet with value 127 or in range 1 to 26
+### It should return keys on reading an octet with value 127 or in range 0 to 27
 
-**For any character _Chr_ (`char8_t`) in [1,..,26,127]**
+**For any character _Chr_ (`char8_t`) in [0,..,26,127]**
 
 **given** VtInputFromCharacters has been reset
 

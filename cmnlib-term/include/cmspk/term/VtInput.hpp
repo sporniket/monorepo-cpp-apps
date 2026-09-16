@@ -23,6 +23,49 @@ struct VtInputUnknown {
 };
 
 /************************************************
+Identifies a key stroke represented by a Vt sequence.
+
+* By a "happy coïncidence", the numeric value of `CTRL + letter` and some special key (`RETURN`, `HTAB`, `ESCAPE`, and `BACKSPACE`) **will** be the value of
+their single octet representation in Vt.
+  * `HTAB` and `RETURN` replace `CTRL_I` and `CTRL_M`, respectively
+  * `CTRL_SPACE` has numeric value zero.
+* By "design", any sequence of more than 1 octet mapped to a key **will** have a 32-bits value with the higher 16-bits value being the introducting character
+sequence (e.g. the CSI `escape+'['`), in other words, a CSI introduced key will have a value in the range `0x1b5b0000~0x1b5bffff`. **The actual values of the
+constants are subject to change at any time**
+************************************************/
+enum class VtInputKey {
+    CTRL_SPACE = 0,
+    CTRL_A,
+    CTRL_B,
+    CTRL_C,
+    CTRL_D,
+    CTRL_E,
+    CTRL_F,
+    CTRL_G,
+    CTRL_H,
+    HTAB,
+    CTRL_J,
+    CTRL_K,
+    CTRL_L,
+    RETURN,
+    CTRL_N,
+    CTRL_O,
+    CTRL_P,
+    CTRL_Q,
+    CTRL_R,
+    CTRL_S,
+    CTRL_T,
+    CTRL_U,
+    CTRL_V,
+    CTRL_W,
+    CTRL_X,
+    CTRL_Y,
+    CTRL_Z,
+    ESCAPE,
+    BACKSPACE = 127
+};
+
+/************************************************
 A representation of a virtual terminal input
 
 It can be :
@@ -33,7 +76,7 @@ It can be :
 set encoding) ;</li> <li>or none of the formers, i.e. an _unknown_ input, and as such will be ignored ;</li>
 </ul>
 ************************************************/
-using VtInput = std::variant<VtInputUnknown>;
+using VtInput = std::variant<VtInputKey, char8_t, VtInputUnknown>;
 
 // ================[ END OF CODE ]================
 }  // namespace cmspk::term

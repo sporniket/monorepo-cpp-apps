@@ -11,6 +11,7 @@
 // standard libs
 #include <expected>
 #include <optional>
+#include <vector>
 
 // project
 #include "cmspk/term/VtInput.hpp"
@@ -64,7 +65,15 @@ class VtInputFromCharacters {
         if (data) {
             return std::unexpected(VtInputFromCharactersError::CANNOT_ACCEPT_ANY_NEW_CHARACTER);
         }
-        data = VtInputUnknown(character);
+        if (character == 127) {
+            data = VtInputKey::BACKSPACE;
+        } else if (character < 27) {
+            data = keys_of_range_0_27.at(character);
+        } else if (character >= 32) {
+            data = character;
+        } else {
+            data = VtInputUnknown(character);
+        }
         return std::expected<void, VtInputFromCharactersError>();
     }
 
@@ -82,6 +91,11 @@ class VtInputFromCharacters {
 
   private:
     std::optional<VtInput> data = std::nullopt;
+    const std::vector<VtInputKey> keys_of_range_0_27{
+        VtInputKey::CTRL_SPACE, VtInputKey::CTRL_A, VtInputKey::CTRL_B, VtInputKey::CTRL_C, VtInputKey::CTRL_D, VtInputKey::CTRL_E, VtInputKey::CTRL_F,
+        VtInputKey::CTRL_G,     VtInputKey::CTRL_H, VtInputKey::HTAB,   VtInputKey::CTRL_J, VtInputKey::CTRL_K, VtInputKey::CTRL_L, VtInputKey::RETURN,
+        VtInputKey::CTRL_N,     VtInputKey::CTRL_O, VtInputKey::CTRL_P, VtInputKey::CTRL_Q, VtInputKey::CTRL_R, VtInputKey::CTRL_S, VtInputKey::CTRL_T,
+        VtInputKey::CTRL_U,     VtInputKey::CTRL_V, VtInputKey::CTRL_W, VtInputKey::CTRL_X, VtInputKey::CTRL_Y, VtInputKey::CTRL_Z};
 };
 // ================[ END OF CODE ]================
 }  // namespace cmspk::term
