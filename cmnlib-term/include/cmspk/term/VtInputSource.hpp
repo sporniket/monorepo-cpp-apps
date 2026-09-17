@@ -44,6 +44,49 @@ while(running) {
 ```
 
 Under the hood, it reads from a provided data source of raw characters `char8_t` and manages a `cmspk::term::VtInputFromCharacters`.
+
+
+## Requirements
+
+* [Specfication guidelines](../../README--specification-guidelines.md)
+* [VtInput](./VtInput.md)
+* [VtInputFromCharacters](./VtInputFromCharacters.md)
+* [DataSource](../../cmnlib-io/00-specs/DataSource.md)
+
+
+## Behaviours
+
+---
+### It should process single-octet values -- unknown values
+
+> This is the fall-back behaviour.
+>
+> The list [28,29,30,31] is what remains unknown when all other behaviours have been implemented.
+
+__given__ a character data source that will return the sequence : `[28,29,30,31]`.
+
+__given__ the VtInputSource under test is plugged to that character data source.
+
+__when__ reading the next VtInput with `next()` as many time as the length of the sequence.
+
+__then__ each time the VtInputSource will return a `std::variant` containing a `VtInputUnknown` having the expected `rawValue`.
+
+__then__ reading the next VtInput returns and end of file error.
+
+---
+### It should process single-octet values -- printable characters and keys
+
+__given__ a character data source that will return a mixed list of single-octet printable characters and single-octet keys (except ESCAPE).
+
+__given__ the VtInputSource under test is plugged to that character data source.
+
+__when__ reading the next VtInput with `next()` as many time as the length of the sequence.
+
+__then__ each time the VtInputSource will return a `std::variant` containing the expected `char8_t` or `VtInputKey`.
+
+__then__ reading the next VtInput returns and end of file error.
+
+
 ************************************************/
 class VtInputSource : public cmspk::io::BasicDataSource<cmspk::term::VtInput, char8_t> {
   public:

@@ -57,79 +57,79 @@ Under the hood, it reads from a provided data source of raw characters `char8_t`
 > 
 > The list [28,29,30,31] is what remains unknown when all other behaviours have been implemented.
 
-**given** a character data source that will return the sequence : `[28,29,30,31]`.
+__given__ a character data source that will return the sequence : `[28,29,30,31]`.
 
-**given** the VtInputSource under test is plugged to that character data source.
+__given__ the VtInputSource under test is plugged to that character data source.
 
-**when** reading the next VtInput with `next()` as many time as the length of the sequence.
+__when__ reading the next VtInput with `next()` as many time as the length of the sequence.
 
-**then** each time the VtInputSource will return a `std::variant` containing a `VtInputUnknown` having the expected `rawValue`.
+__then__ each time the VtInputSource will return a `std::variant` containing a `VtInputUnknown` having the expected `rawValue`.
 
-**then** reading the next VtInput returns and end of file error.
+__then__ reading the next VtInput returns and end of file error.
 
 
 ### It should process single-octet values -- printable characters and keys
 
-**given** a character data source that will return a mixed list of single-octet printable characters and single-octet keys (except ESCAPE).
+__given__ a character data source that will return a mixed list of single-octet printable characters and single-octet keys (except ESCAPE).
 
-**given** the VtInputSource under test is plugged to that character data source.
+__given__ the VtInputSource under test is plugged to that character data source.
 
-**when** reading the next VtInput with `next()` as many time as the length of the sequence.
+__when__ reading the next VtInput with `next()` as many time as the length of the sequence.
 
-**then** the VtInputSource will return for each item a `std::variant` containing the expected `char8_t` or the `VtInputKey`.
+__then__ each time the VtInputSource will return a `std::variant` containing the expected `char8_t` or `VtInputKey`.
 
-**then** reading the next VtInput returns and end of file error.
+__then__ reading the next VtInput returns and end of file error.
 
 > ARRIVED HERE
 
 
 ### It should return a Vt null on reading the zero octet
 
-**given** a character data source that will return zero.
+__given__ a character data source that will return zero.
 
-**when** reading the next VtInput with `next()`
+__when__ reading the next VtInput with `next()`
 
-**then** the VtInputSource will return a `std::variant` containing a `VtInputNull`.
+__then__ the VtInputSource will return a `std::variant` containing a `VtInputNull`.
 
 
 ### It should return printable characters
 
 **For each characters `Chr` (`char8_t`) in range(32,256) excluding 127**
 
-**given** a data source of characters that will return `Chr`
+__given__ a data source of characters that will return `Chr`
 
-**when** reading the next VtInput with `next()`
+__when__ reading the next VtInput with `next()`
 
-**then** the VtInputSource will return a `std::variant` containing the char8_t `Chr`.
+__then__ the VtInputSource will return a `std::variant` containing the char8_t `Chr`.
 
 
 ### It should return keys on recognizing key sequences
 
 **For each enum value `K` in `VtInputKey`**
 
-**given** a character data source that will return the Vt sequence of characters that should be recognized as `Ks`
+__given__ a character data source that will return the Vt sequence of characters that should be recognized as `Ks`
 
-**when** reading the next VtInput with `next()`
+__when__ reading the next VtInput with `next()`
 
-**then** the VtInputSource will return a `std::variant` containing the `VtInputKey` `Ks`.
+__then__ the VtInputSource will return a `std::variant` containing the `VtInputKey` `Ks`.
 
 
 ### It should return Vt report on recognizing cursor position report
 
-**given** a character data source that will return the sequence "\x1b[24;80R"
+__given__ a character data source that will return the sequence "\x1b[24;80R"
 
-**when** reading the next VtInput with `next()`
+__when__ reading the next VtInput with `next()`
 
-**then** the VtInputSource will return a `std::variant` containing the `VtInputReport` of type `CURSOR_POSITION`, with 2 arguments "24" and "80".
+__then__ the VtInputSource will return a `std::variant` containing the `VtInputReport` of type `CURSOR_POSITION`, with 2 arguments "24" and "80".
 
 
 ### It should buffer single-octet Vt inputs when a sequence is interrupted by an error.
 
-**given** a character data source that will return the sequence "\x1b[2" and then an IoError `END_OF_DATA`
+__given__ a character data source that will return the sequence "\x1b[2" and then an IoError `END_OF_DATA`
 
-**when** reading the next VtInput in a loop with `next()` with a stop when getting an IoError
+__when__ reading the next VtInput in a loop with `next()` with a stop when getting an IoError
 
-**then** the VtInputSource will return the following sequence of `std::variant` before getting an IoError `END_OF_DATA` : 
+__then__ the VtInputSource will return the following sequence of `std::variant` before getting an IoError `END_OF_DATA` : 
 
 * a `std::variant` containing the `VtInputKey` value `ESCAPE` ;
 * a `std::variant` containing the printable character `[` ;
@@ -137,11 +137,11 @@ Under the hood, it reads from a provided data source of raw characters `char8_t`
 
 ### It should not lose data when a new sequence interrupt a partial sequence of a multi-octets Vt input
 
-**given** a character data source that will return the sequence "\x1b[2\x1b[A"
+__given__ a character data source that will return the sequence "\x1b[2\x1b[A"
 
-**when** reading the next VtInput four times
+__when__ reading the next VtInput four times
 
-**then** the VtInputSource will return the following sequence of `std::variant` : 
+__then__ the VtInputSource will return the following sequence of `std::variant` : 
 
 * a `std::variant` containing the `VtInputKey` value `ESCAPE` ;
 * a `std::variant` containing the printable character `[` ;

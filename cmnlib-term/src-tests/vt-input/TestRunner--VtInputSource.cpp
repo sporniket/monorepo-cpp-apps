@@ -86,17 +86,17 @@ Test(DataSourceFromSequence, should_return_each_value_of_source_vector) {
 }
 
 Test(VtInputSource, should_process_single_octet_values__unknown_values) {
-    /// **given** a character data source that will return the sequence : `[28,29,30,31]`.
+    /// __given__ a character data source that will return the sequence : `[28,29,30,31]`.
     std::vector<char8_t> toBeTested{28, 29, 30, 31};
 
-    /// **given** the VtInputSource under test is plugged to that character data source
+    /// __given__ the VtInputSource under test is plugged to that character data source
     cmspk::term::VtInputSource source(std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new DataSourceFromSequence(toBeTested)));
 
     for (char8_t c : toBeTested) {
-        /// **when** reading the next VtInput with `next()` as many time as the length of the sequence.
+        /// __when__ reading the next VtInput with `next()` as many time as the length of the sequence.
         std::expected<cmspk::term::VtInput, cmspk::io::IoErrorAscii> nextInput = source.next();
 
-        /// **then** each time the VtInputSource will return a `std::variant` containing a `VtInputUnknown` having the expected `rawValue`.
+        /// __then__ each time the VtInputSource will return a `std::variant` containing a `VtInputUnknown` having the expected `rawValue`.
         if (nextInput) {
             cr_assert(std::holds_alternative<cmspk::term::VtInputUnknown>(*nextInput));
             cmspk::term::VtInputUnknown vtin = std::get<cmspk::term::VtInputUnknown>(*nextInput);
@@ -106,17 +106,17 @@ Test(VtInputSource, should_process_single_octet_values__unknown_values) {
         }
     }
 
-    /// **then** reading the next VtInput returns and end of file error.
+    /// __then__ reading the next VtInput returns and end of file error.
     std::expected<cmspk::term::VtInput, cmspk::io::IoErrorAscii> nextChar = source.next();
     cr_assert(not(nextChar), "should return an error");
     cr_assert(cmspk::io::IoErrorType::END_OF_DATA == nextChar.error().type);
 }
 
 Test(VtInputSource, should_process_single_octet_values__printable_characters_and_keys) {
-    /// **given** a character data source that will return a mixed list of single-octet printable characters and single-octet keys (except ESCAPE).
+    /// __given__ a character data source that will return a mixed list of single-octet printable characters and single-octet keys (except ESCAPE).
     std::vector<char8_t> toBeTested{0, 1, 2, 3, 4, 5, 26, 32, 65, 66, 13};  // a sample of known inputs
 
-    /// **given** the VtInputSource under test is plugged to that character data source.
+    /// __given__ the VtInputSource under test is plugged to that character data source.
     cmspk::term::VtInputSource source(std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new DataSourceFromSequence(toBeTested)));
 
     uint16_t count = 0;
@@ -132,10 +132,10 @@ Test(VtInputSource, should_process_single_octet_values__printable_characters_and
                                                    (char8_t)'B',
                                                    cmspk::term::VtInputKey::RETURN};
     for (cmspk::term::VtInput expectedInput : toBeExpected) {
-        /// **when** reading the next VtInput with `next()` as many time as the length of the sequence.
+        /// __when__ reading the next VtInput with `next()` as many time as the length of the sequence.
         std::expected<cmspk::term::VtInput, cmspk::io::IoErrorAscii> nextInput = source.next();
 
-        /// **then** each time the VtInputSource will return a `std::variant` containing the expected `char8_t` or `VtInputKey`.
+        /// __then__ each time the VtInputSource will return a `std::variant` containing the expected `char8_t` or `VtInputKey`.
         if (nextInput) {
             if (std::holds_alternative<cmspk::term::VtInputKey>(expectedInput)) {
                 cr_assert(std::holds_alternative<cmspk::term::VtInputKey>(*nextInput), "expected VtInputKey at index #%d", count);
@@ -151,7 +151,7 @@ Test(VtInputSource, should_process_single_octet_values__printable_characters_and
         count++;
     }
 
-    /// **then** reading the next VtInput returns and end of file error.
+    /// __then__ reading the next VtInput returns and end of file error.
     std::expected<cmspk::term::VtInput, cmspk::io::IoErrorAscii> nextChar = source.next();
     cr_assert(not(nextChar), "should return an error");
     cr_assert(cmspk::io::IoErrorType::END_OF_DATA == nextChar.error().type);
