@@ -56,6 +56,78 @@ if (converter.canGetData()) {
   std::optional<VtInput> result2 = converter.getData() ; // is present and contains a char8_t '['
 }
 ```
+
+## Requirements
+
+* * [Specfication guidelines](../../README--specification-guidelines.md)
+* * cmspk::term::VtInput
+
+
+## Behaviours
+
+
+> _BEGIN extracted from `TestRunner--VtInputFromCharacters.cpp`_
+
+<hr>
+
+### VtInputFromCharacters, should_return_an_unknown_virtual_terminal_input_on_reading_an_octet_that_is_not_recognizable ###
+
+> This is the fall-back behaviour. The list [28,29,30,31] is what remains unknown when all other behaviours have been implemented.
+
+__for__ any character _c_ in `[28,29,30,31]`
+
+__given__ VtInputFromCharacters has been reset
+
+__when__ VtInputFromCharacters is fed with _c_
+
+__then__ VtInputFromCharacters does not accept characters anymore
+
+__then__ VtInputFromCharacters does have data
+
+__then__ the VtInputFromCharacters will return a `std::variant` containing a `VtInputUnkown` with _c_ as `rawValue`.
+
+__then__ VtInputFromCharacters does not have data
+
+<hr>
+
+### VtInputFromCharacters, should_return_printable_characters_on_reading_an_octet_with_value_in_range_32_to_256_excluding_127 ###
+
+__for__ any character _c_ in `range(32,256)` excluding 127
+
+__given__ VtInputFromCharacters has been reset
+
+__when__ VtInputFromCharacters is fed with _c_
+
+__then__ VtInputFromCharacters does not accept characters anymore
+
+__then__ VtInputFromCharacters does have data
+
+__then__ the VtInputFromCharacters will return a `std::variant` containing _c_.
+
+__then__ VtInputFromCharacters does not have data
+
+<hr>
+
+### VtInputFromCharacters, should_return_keys_on_reading_an_octet_with_value_127_or_in_range_0_to_27 ###
+
+__for__ any character _c_ in [0,..,26,127]
+
+__given__ VtInputFromCharacters has been reset
+
+__when__ VtInputFromCharacters is fed with _c_
+
+__then__ VtInputFromCharacters does not accept characters anymore
+
+__then__ VtInputFromCharacters does have data
+
+__then__ the VtInputFromCharacters will return a `std::variant` containing the VtInputKey corresponding to _c_.
+
+__then__ VtInputFromCharacters does not have data
+
+<hr>
+
+> _END extracted from `TestRunner--VtInputFromCharacters.cpp`_
+
 ************************************************/
 class VtInputFromCharacters {
   public:
