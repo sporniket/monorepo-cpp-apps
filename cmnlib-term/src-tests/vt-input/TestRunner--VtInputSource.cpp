@@ -86,10 +86,11 @@ Test(DataSourceFromSequence, should_return_each_value_of_source_vector) {
 }
 
 Test(VtInputSource, should_process_single_octet_values__unknown_values) {
+    /// > This is the fall-back behaviour. The list [28,29,30,31] is what remains unknown when all other behaviours have been implemented.
     /// __given__ a character data source that will return the sequence : `[28,29,30,31]`.
     std::vector<char8_t> toBeTested{28, 29, 30, 31};
 
-    /// __given__ the VtInputSource under test is plugged to that character data source
+    /// __given__ the VtInputSource under test is plugged to that character data source.
     cmspk::term::VtInputSource source(std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new DataSourceFromSequence(toBeTested)));
 
     for (char8_t c : toBeTested) {

@@ -48,20 +48,21 @@ Under the hood, it reads from a provided data source of raw characters `char8_t`
 
 ## Requirements
 
-* [Specfication guidelines](../../README--specification-guidelines.md)
-* [VtInput](./VtInput.md)
-* [VtInputFromCharacters](./VtInputFromCharacters.md)
-* [DataSource](../../cmnlib-io/00-specs/DataSource.md)
+* * [Specfication guidelines](../../README--specification-guidelines.md)
+* * cmspk::term::VtInput
+* * cmspk::term::VtInputFromCharacters
+* * cmspk::io::DataSource
 
 
 ## Behaviours
 
----
-### It should process single-octet values -- unknown values
+> _BEGIN extracted from `TestRunner--VtInputSource.cpp`_
 
-> This is the fall-back behaviour.
->
-> The list [28,29,30,31] is what remains unknown when all other behaviours have been implemented.
+<hr>
+
+### VtInputSource, should_process_single_octet_values__unknown_values ###
+
+> This is the fall-back behaviour. The list [28,29,30,31] is what remains unknown when all other behaviours have been implemented.
 
 __given__ a character data source that will return the sequence : `[28,29,30,31]`.
 
@@ -73,8 +74,9 @@ __then__ each time the VtInputSource will return a `std::variant` containing a `
 
 __then__ reading the next VtInput returns and end of file error.
 
----
-### It should process single-octet values -- printable characters and keys
+<hr>
+
+### VtInputSource, should_process_single_octet_values__printable_characters_and_keys ###
 
 __given__ a character data source that will return a mixed list of single-octet printable characters and single-octet keys (except ESCAPE).
 
@@ -86,6 +88,9 @@ __then__ each time the VtInputSource will return a `std::variant` containing the
 
 __then__ reading the next VtInput returns and end of file error.
 
+<hr>
+
+> _END extracted from `TestRunner--VtInputSource.cpp`_
 
 ************************************************/
 class VtInputSource : public cmspk::io::BasicDataSource<cmspk::term::VtInput, char8_t> {
