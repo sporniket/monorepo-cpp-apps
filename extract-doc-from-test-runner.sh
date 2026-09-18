@@ -10,5 +10,8 @@ if [ $# -lt 1 ]; then
   exit -1
 fi
 
-grep -h "\(^Test\)\|\(/// **\)" "$1" | sed -E -e "s,^[ ]*/// ,    ," | sed -E -e "s,^Test[(],\n\n## ," | sed -E -e "s,[)] [{]$, ##,"
+echo "> _BEGIN extracted from \`$(basename "$1")\`_"
+grep -h "\(^Test\)\|\(/// [_>]\)" "$1" | sed -E -e "s,^[ ]*/// ,\n," | sed -E -e "s,^Test[(],\n<hr>\n\n### ," | sed -E -e "s,[)] [{]$, ###,"
+echo -e "\n<hr>\n"
+echo "> _END extracted from \`$(basename "$1")\`_"
 
