@@ -9,8 +9,10 @@
 #define __CMSPK__TERM__VTINPUTFROMCHARACTERS_HPP__
 
 // standard libs
+#include <deque>
 #include <expected>
 #include <optional>
+#include <string>
 #include <vector>
 
 // project
@@ -19,7 +21,82 @@
 namespace cmspk::term {
 // ================[ CODE BEGINS ]================
 // Enums of errors
+/**
+ * Identifiable causes of error.
+ */
 enum class VtInputFromCharactersError { CANNOT_ACCEPT_ANY_NEW_CHARACTER };
+
+/**
+ * States for the internal finite state machine.
+ *
+ * The goal is to be able to match a message generally defined like this :
+ *
+ * ```
+ * digit:= one_of('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
+ * number:= @digit({.minimum = 1, .maximum = 5});
+ * command:= one_of('A'..'Z','~'); // to expand
+ * message:= append('\x1b[',optional_of(@number(),optional_of(';', @number())), @command());
+ * ```
+ */
+enum class VtInputSequenceParserState {
+    /**
+     * Initial state, stay at this state until getting ASCII 27 ('\x1b').
+     */
+    WAITING_FOR_ESCAPE,
+    /**
+     * Stay at this state until getting '['.
+     */
+    WAITING_FOR_CSI,
+    /**
+     * Stay at this state until getting a digit or a command.
+     */
+    WAITING_FOR_FIRST_NUMBER_OR_COMMAND,
+    /**
+     * Stay at this state until getting a ';' or a command.
+     */
+    WAITING_FOR_NUMBER_SEPARATOR_OR_COMMAND,
+    /**
+     * Stay at this state until getting a digit.
+     */
+    WAITING_FOR_SECOND_NUMBER,
+    /**
+     * Stay at this state until getting command.
+     */
+    WAITING_FOR_COMMAND,
+    /**
+     * Final state, the state machine MUST be reset.
+     */
+    ITS_A_MATCH
+};
+
+/**
+ * Parser context to match a VT input sequence.
+ *
+ * A general form of VT input sequence is `'\x1b['+[number + [';' + number]]+command`.
+ */
+struct VtInputSequenceParserContext {
+    VtInputSequenceParserState state = VtInputSequenceParserState::WAITING_FOR_ESCAPE;
+    std::optional<char8_t> command = std::nullopt;
+    std::optional<std::basic_string<char8_t>> firstNumber = std::nullopt;
+    std::optional<std::basic_string<char8_t>> secondNumber = std::nullopt;
+
+    void reset() {
+        state = VtInputSequenceParserState::WAITING_FOR_ESCAPE;
+        command = std::nullopt;
+        firstNumber = std::nullopt;
+        secondNumber = std::nullopt;
+    }
+
+    void initFirstNumber() {
+        firstNumber = std::basic_string<char8_t>();
+        firstNumber->reserve(5);
+    }
+
+    void initSecondNumber() {
+        secondNumber = std::basic_string<char8_t>();
+        secondNumber->reserve(5);
+    }
+};
 
 /************************************************
 Converts a sequence of characters (`char8_t`) into a sequence of virtual terminal inputs.
@@ -132,37 +209,41 @@ __then__ VtInputFromCharacters does not have data
 class VtInputFromCharacters {
   public:
     // feeding
-    bool canAppend() { return !data; }
+    bool canAppend() { return data.empty(); }
     std::expected<void, VtInputFromCharactersError> append(char8_t character) {
-        if (data) {
+        if (!data.empty()) {
             return std::unexpected(VtInputFromCharactersError::CANNOT_ACCEPT_ANY_NEW_CHARACTER);
         }
         if (character == 127) {
-            data = VtInputKey::BACKSPACE;
+            data.push_back(VtInputKey::BACKSPACE);
         } else if (character < 27) {
-            data = keys_of_range_0_27.at(character);
+            data.push_back(keys_of_range_0_27.at(character));
         } else if (character >= 32) {
-            data = character;
+            data.push_back(character);
         } else {
-            data = VtInputUnknown(character);
+            data.push_back(VtInputUnknown(character));
         }
         return std::expected<void, VtInputFromCharactersError>();
     }
 
     // getting data
-    bool canGetData() { return !!data; }
+    bool canGetData() { return !data.empty(); }
     std::optional<VtInput> getData() {
-        std::optional<VtInput> result(data);
-        data = std::nullopt;
+        if (data.empty()) {
+            return std::nullopt;
+        }
+        std::optional<VtInput> result(data.front());
+        data.pop_front();
         return result;
     }
 
     // maintenance
     void abort() {}
-    void reset() { data = std::nullopt; }
+    void reset() { data.clear(); }
 
   private:
-    std::optional<VtInput> data = std::nullopt;
+    std::deque<VtInput> data;
+    VtInputSequenceParserContext sequenceParserContext;
     const std::vector<VtInputKey> keys_of_range_0_27{
         VtInputKey::CTRL_SPACE, VtInputKey::CTRL_A, VtInputKey::CTRL_B, VtInputKey::CTRL_C, VtInputKey::CTRL_D, VtInputKey::CTRL_E, VtInputKey::CTRL_F,
         VtInputKey::CTRL_G,     VtInputKey::CTRL_H, VtInputKey::HTAB,   VtInputKey::CTRL_J, VtInputKey::CTRL_K, VtInputKey::CTRL_L, VtInputKey::RETURN,
