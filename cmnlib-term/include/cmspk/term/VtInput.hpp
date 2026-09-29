@@ -62,9 +62,32 @@ enum class VtInputKey {
     CTRL_Y,
     CTRL_Z,
     ESCAPE,
-    BACKSPACE = 127
+    BACKSPACE = 127,
+    // and now keys mapped to multi-octets sequence (with CSI)
+    // -- arrows
+    arrow_up = 0x1b5b0000,
+    arrow_down,
+    arrow_left,
+    arrow_right
 };
 
+/************************************************
+Model of a Vt cursor position report.
+************************************************/
+struct VtInputCursorPositionReport {
+    /**
+     * Row, i.e. y position (0-based or 1-based ?).
+     */
+    uint16_t row;
+    /**
+     * Column, i.e. x position (0-based or 1-based ?).
+     */
+    uint16_t col;
+};
+/************************************************
+Model of a Vt report, like the cursor position.
+************************************************/
+using VtInputReport = std::variant<VtInputCursorPositionReport>;
 /************************************************
 A representation of a virtual terminal input
 
@@ -76,7 +99,7 @@ It can be :
 set encoding) ;</li> <li>or none of the formers, i.e. an _unknown_ input, and as such will be ignored ;</li>
 </ul>
 ************************************************/
-using VtInput = std::variant<VtInputKey, char8_t, VtInputUnknown>;
+using VtInput = std::variant<VtInputReport, VtInputKey, char8_t, VtInputUnknown>;
 
 // ================[ END OF CODE ]================
 }  // namespace cmspk::term

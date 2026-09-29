@@ -11,6 +11,7 @@
 // standard libs
 #include <deque>
 #include <expected>
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -56,11 +57,7 @@ enum class VtInputSequenceParserState {
      */
     WAITING_FOR_NUMBER_SEPARATOR_OR_COMMAND,
     /**
-     * Stay at this state until getting a digit.
-     */
-    WAITING_FOR_SECOND_NUMBER,
-    /**
-     * Stay at this state until getting command.
+     * Stay at this state until getting a command.
      */
     WAITING_FOR_COMMAND,
     /**
@@ -75,28 +72,105 @@ enum class VtInputSequenceParserState {
  * A general form of VT input sequence is `'\x1b['+[number + [';' + number]]+command`.
  */
 struct VtInputSequenceParserContext {
-    VtInputSequenceParserState state = VtInputSequenceParserState::WAITING_FOR_ESCAPE;
+    static constexpr size_t max_number_size = 5;
+    VtInputSequenceParserState state;
     std::basic_string<char8_t> rawAccumulator;
-    std::optional<char8_t> command = std::nullopt;
-    std::optional<std::basic_string<char8_t>> firstNumber = std::nullopt;
-    std::optional<std::basic_string<char8_t>> secondNumber = std::nullopt;
+    std::optional<char8_t> command;
+    std::basic_string<char8_t> firstNumber;
+    std::basic_string<char8_t> secondNumber;
 
-    void reset() {
+    VtInputSequenceParserContext() noexcept : state(VtInputSequenceParserState::WAITING_FOR_ESCAPE), command(std::nullopt) {
+        firstNumber.reserve(max_number_size);
+        secondNumber.reserve(max_number_size);
+        rawAccumulator.reserve(14);  // up to 2 5-digits numbers + char 27 + csi + separator + command
+    }
+
+    void reset() noexcept {
         state = VtInputSequenceParserState::WAITING_FOR_ESCAPE;
         rawAccumulator.clear();
         command = std::nullopt;
-        firstNumber = std::nullopt;
-        secondNumber = std::nullopt;
+        firstNumber.clear();
+        secondNumber.clear();
     }
 
-    void initFirstNumber() {
-        firstNumber = std::basic_string<char8_t>();
-        firstNumber->reserve(5);
+    void acceptChar(char8_t character) noexcept {
+        char8_t buffer[1]{character};
+        // buffer[0] = character;
+        rawAccumulator.append(buffer);
     }
 
-    void initSecondNumber() {
-        secondNumber = std::basic_string<char8_t>();
-        secondNumber->reserve(5);
+    void acceptAsDigit(char8_t character) noexcept {
+        char8_t buffer[1]{character};
+        // buffer[0] = character;
+        rawAccumulator.append(buffer);
+        if (isWaitingForFirstNumberOrCommand() || isWaitingForNumberSeparatorOrCommand()) {
+            firstNumber.append(buffer);
+        } else if (isWaitingForSecondNumberOrCommand()) {
+            secondNumber.append(buffer);
+        }
+    }
+
+    void startParsingWith(char8_t character) noexcept {
+        acceptChar(character);
+        waitForCsi();
+    }
+
+    bool isCursorPositionReport() const noexcept {
+        if (!command) return false;
+        return ((*command) == 'R' && !firstNumber.empty() && !secondNumber.empty());
+    }
+
+    bool isParsingMessageOrDone() const noexcept { return state != VtInputSequenceParserState::WAITING_FOR_ESCAPE; }
+
+    bool isDone() const noexcept { return state == VtInputSequenceParserState::ITS_A_MATCH; }
+    bool isWaitingForCsi() const noexcept { return state == VtInputSequenceParserState::WAITING_FOR_CSI; }
+    bool isWaitingForFirstNumberOrCommand() const noexcept { return state == VtInputSequenceParserState::WAITING_FOR_FIRST_NUMBER_OR_COMMAND; }
+    bool isWaitingForNumberSeparatorOrCommand() const noexcept { return state == VtInputSequenceParserState::WAITING_FOR_NUMBER_SEPARATOR_OR_COMMAND; }
+    bool isWaitingForSecondNumberOrCommand() const noexcept { return state == VtInputSequenceParserState::WAITING_FOR_COMMAND; }
+    bool isWaitingForCommand() const noexcept {
+        return isWaitingForFirstNumberOrCommand() || isWaitingForNumberSeparatorOrCommand() || isWaitingForSecondNumberOrCommand();
+    }
+
+    bool canStartParsing(char8_t character) const noexcept { return character == 27; }
+    bool isCsi(char8_t character) const noexcept { return character == '['; }
+    bool isDigit(char8_t character) const noexcept { return character >= '0' && character <= '9'; }
+    bool isCommand(char8_t character) const noexcept { return (character >= 'A' && character <= 'Z') || character == '~'; }
+    bool isNumberSeparator(char8_t character) const noexcept { return character == ';'; }
+    bool canAcceptAsCsi(char8_t character) const noexcept {
+        if (!isCsi(character)) return false;
+        return isWaitingForCsi();
+    }
+    bool canAcceptAsDigit(char8_t character) const noexcept {
+        if (!isDigit(character)) return false;
+        return (isWaitingForNumberSeparatorOrCommand() && firstNumber.size() <= max_number_size) ||
+               (isWaitingForSecondNumberOrCommand() && secondNumber.size() <= max_number_size);
+    }
+    bool canAcceptAsCommand(char8_t character) const noexcept {
+        if (!isCommand(character)) return false;
+        return isWaitingForCommand();
+    }
+    bool canAcceptAsNumberSeparator(char8_t character) const noexcept {
+        if (!isNumberSeparator(character)) return false;
+        return isWaitingForNumberSeparatorOrCommand();
+    }
+
+    void waitForCsi() noexcept { state = VtInputSequenceParserState::WAITING_FOR_CSI; }
+    void waitForFirstNumberOrCommand() noexcept { state = VtInputSequenceParserState::WAITING_FOR_FIRST_NUMBER_OR_COMMAND; }
+    void waitForNumberSeparatorOrCommand() noexcept { state = VtInputSequenceParserState::WAITING_FOR_NUMBER_SEPARATOR_OR_COMMAND; }
+    void waitForCommand() noexcept { state = VtInputSequenceParserState::WAITING_FOR_COMMAND; }
+    void done() noexcept { state = VtInputSequenceParserState::ITS_A_MATCH; }
+
+    uint32_t uint32FromFirstNumber() { return uint32FromNumber(firstNumber); }
+    uint32_t uint32FromSecondNumber() { return uint32FromNumber(secondNumber); }
+
+  private:
+    uint32_t uint32FromNumber(const std::basic_string<char8_t>& number) const noexcept {
+        uint32_t result = 0;
+        for (const char8_t c : number) {
+            uint32_t digit = (uint32_t)(c)-0x30;  // digits are ascii 0x30('0') to 0x39('9')
+            result = 10 * result + digit;
+        }
+        return result;
     }
 };
 
@@ -213,36 +287,59 @@ class VtInputFromCharacters {
     // feeding
     bool canAppend() { return data.empty(); }
     std::expected<void, VtInputFromCharactersError> append(char8_t character) {
-        if (!data.empty()) {
+        if (!data.empty() || sequenceParserContext.isDone()) {
             return std::unexpected(VtInputFromCharactersError::CANNOT_ACCEPT_ANY_NEW_CHARACTER);
         }
-        // TODO either it is processed by the parser...
-        switch (sequenceParserContext.state) {
-            case VtInputSequenceParserState::WAITING_FOR_ESCAPE:
-                if (character == 27) {
-                    char8_t buffer[1];
-                    buffer[0] = character;
-                    sequenceParserContext.rawAccumulator.append(buffer);
-                    sequenceParserContext.state = VtInputSequenceParserState::WAITING_FOR_CSI;
-                    return ok();
+
+        if (sequenceParserContext.isParsingMessageOrDone()) {
+            // Message parsing ongoing (done is handled just before)
+            if (sequenceParserContext.canAcceptAsCsi(character)) {
+                sequenceParserContext.acceptChar(character);
+                sequenceParserContext.waitForFirstNumberOrCommand();
+            } else if (sequenceParserContext.canAcceptAsCommand(character)) {
+                sequenceParserContext.acceptChar(character);
+                sequenceParserContext.command = character;
+                processMessage();
+            } else if (sequenceParserContext.canAcceptAsDigit(character)) {
+                sequenceParserContext.acceptAsDigit(character);
+                if (sequenceParserContext.isWaitingForFirstNumberOrCommand()) {
+                    sequenceParserContext.waitForNumberSeparatorOrCommand();
                 }
-                break;
-            case VtInputSequenceParserState::WAITING_FOR_CSI:
-                return ok();
-            case VtInputSequenceParserState::WAITING_FOR_FIRST_NUMBER_OR_COMMAND:
-                return ok();
-            case VtInputSequenceParserState::WAITING_FOR_NUMBER_SEPARATOR_OR_COMMAND:
-                return ok();
-            case VtInputSequenceParserState::WAITING_FOR_SECOND_NUMBER:
-                return ok();
-            case VtInputSequenceParserState::WAITING_FOR_COMMAND:
-                return ok();
-            case VtInputSequenceParserState::ITS_A_MATCH:
-                return ok();
+            } else if (sequenceParserContext.canAcceptAsNumberSeparator(character)) {
+                sequenceParserContext.acceptChar(character);
+                sequenceParserContext.waitForCommand();
+            } else {
+                // combo breaker !
+                for (char8_t c : sequenceParserContext.rawAccumulator) {
+                    data.push_back(single_octet_map.at((size_t)c));
+                }
+                sequenceParserContext.reset();
+                if (sequenceParserContext.canStartParsing(character)) {
+                    sequenceParserContext.startParsingWith(character);
+                } else {
+                    data.push_back(single_octet_map.at((size_t)character));
+                }
+            }
+        } else if (sequenceParserContext.canStartParsing(character)) {
+            sequenceParserContext.startParsingWith(character);
+        } else {
+            data.push_back(single_octet_map.at((size_t)character));
         }
-        // or by the default mapping
-        data.push_back(single_octet_map.at((size_t)character));
         return ok();
+    }
+
+    void processMessage() {
+        if (sequenceParserContext.isCursorPositionReport()) {
+            data.push_back(VtInputCursorPositionReport(sequenceParserContext.uint32FromFirstNumber(), sequenceParserContext.uint32FromSecondNumber()));
+        } else if (known_keys.contains(sequenceParserContext.rawAccumulator)) {
+            data.push_back(known_keys.at(sequenceParserContext.rawAccumulator));
+        } else {
+            // DUPLICATE from append
+            for (char8_t c : sequenceParserContext.rawAccumulator) {
+                data.push_back(single_octet_map.at((size_t)c));
+            }
+        }
+        sequenceParserContext.reset();
     }
 
     // getting data
@@ -268,6 +365,12 @@ class VtInputFromCharacters {
 
     std::deque<VtInput> data;
     VtInputSequenceParserContext sequenceParserContext;
+    const std::map<std::basic_string<char8_t>, VtInputKey> known_keys{
+        {u8"\x1b[A", VtInputKey::arrow_up},
+        {u8"\x1b[B", VtInputKey::arrow_down},
+        {u8"\x1b[C", VtInputKey::arrow_left},
+        {u8"\x1b[D", VtInputKey::arrow_right},
+    };
     const std::vector<VtInput> single_octet_map{VtInputKey::CTRL_SPACE,  // 0
                                                 VtInputKey::CTRL_A,
                                                 VtInputKey::CTRL_B,
