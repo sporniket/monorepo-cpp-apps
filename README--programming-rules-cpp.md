@@ -42,7 +42,19 @@ uint32_t* uint32Array = (uint32_t*)ptr; // contains 0x78563412, 0xf0debc9a
 uint64_t* uint64Array = (uint64_t*)ptr; // contains 0xf0debc9a78563412
 
 ```
- 
+
+### By the way, never use the term «byte»
+
+«Byte» is misleading and is banned. From type names, documentation and comment. Use «octet» or «uint8» or something like that.
+
+```cpp
+// BEFORE :
+// uint8_t* byteArray = (uint8_t*)ptr; // contains 0x12,0x34,0x56,0x78,0x9a,0xbc,0xde,0xf0
+// AFTER :
+uint8_t* uint8Array = (uint8_t*)ptr; // contains 0x12,0x34,0x56,0x78,0x9a,0xbc,0xde,0xf0
+```
+
+
 ## Goals
 
 * To Favor the standard library, unless I find a good reason to do differently.
@@ -55,6 +67,15 @@ uint64_t* uint64Array = (uint64_t*)ptr; // contains 0xf0debc9a78563412
 * It may trigger (Named) Return Value Optimisation.
 * It is simpler to think and reason about.
 
+### auto is evil
+
+The keyword `auto` hides knowledge. It's bad for discovering a codebase, as well as for learning the language.
+
+For some types, it may trigger unwanted copy or move.
+
+`auto` is a necessary evil only when handling lambdas. **However**, try to design code to avoid it, either by using `std::function` or other alternative.
+
+In any other case, `auto` is banned.
 
 ## Types
 
