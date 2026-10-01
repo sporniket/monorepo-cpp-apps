@@ -143,7 +143,7 @@ struct VtInputSequenceParserContext {
     }
     bool canAcceptAsDigit(char8_t character) const noexcept {
         if (!isDigit(character)) return false;
-        return (isWaitingForNumberSeparatorOrCommand() && firstNumber.size() <= max_number_size) ||
+        return (isWaitingForFirstNumberOrCommand()) || (isWaitingForNumberSeparatorOrCommand() && firstNumber.size() <= max_number_size) ||
                (isWaitingForSecondNumberOrCommand() && secondNumber.size() <= max_number_size);
     }
     bool canAcceptAsCommand(char8_t character) const noexcept {
@@ -275,6 +275,40 @@ __then__ VtInputFromCharacters does not accept characters anymore
 __then__ VtInputFromCharacters does have data
 
 __then__ the VtInputFromCharacters will return a `std::variant` containing the VtInputKey corresponding to _c_.
+
+__then__ VtInputFromCharacters does not have data
+
+<hr>
+
+### VtInputFromCharacters, should_return_keys_on_recognizing_a_multiple_characters_sequence ###
+
+__For any enum value _K_ in `VtInputKey` that is matched by a sequence of at least 2 characters__
+
+__given__ VtInputFromCharacters has been reset
+
+__when__ VtInputFromCharacters is fed with a character sequence that should be recognized as _K_
+
+__then__ VtInputFromCharacters does not accept characters anymore
+
+__then__ VtInputFromCharacters does have data
+
+__then__ the VtInputFromCharacters will return a `std::variant` containing _K_.
+
+__then__ VtInputFromCharacters does not have data
+
+<hr>
+
+### VtInputFromCharacters, should_return_vt_report_on_recognizing_cursor_position_report ###
+
+__given__ VtInputFromCharacters has been reset
+
+__when__ VtInputFromCharacters is fed with the character sequence "\x1b[24;80R"
+
+__then__ VtInputFromCharacters does not accept characters anymore
+
+__then__ VtInputFromCharacters does have data
+
+__then__ the VtInputFromCharacters will return a `std::variant` containing a `std::variant` of type `VtInputCursorPositionReport` row 24 and col 80.
 
 __then__ VtInputFromCharacters does not have data
 

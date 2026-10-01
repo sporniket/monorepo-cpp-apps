@@ -177,4 +177,37 @@ Test(VtInputFromCharacters, should_return_keys_on_recognizing_a_multiple_charact
         cr_assert(not(dut.canGetData()), "Failed for input value from %s", spec.description.c_str());
     }
 }
+
+Test(VtInputFromCharacters, should_return_vt_report_on_recognizing_cursor_position_report) {
+    /// __given__ VtInputFromCharacters has been reset
+    cmspk::term::VtInputFromCharacters dut;
+    dut.reset();
+
+    /// __when__ VtInputFromCharacters is fed with the character sequence "\x1b[24;80R"
+    std::basic_string toBeTested = u8"\x1b[24;80R";
+    for (char8_t c : toBeTested) {
+        cr_assert(dut.canAppend(), "Failed before appending char code %d", (uint16_t)c);
+        cr_assert(not(dut.canGetData()), "Failed before appending char code %d", (uint16_t)c);
+        cr_assert(dut.append(c), "Failed when appending char code %d", (uint16_t)c);
+    }
+
+    /// __then__ VtInputFromCharacters does not accept characters anymore
+    cr_assert(not(dut.canAppend()), "Failed to match report");
+
+    /// __then__ VtInputFromCharacters does have data
+    cr_assert(dut.canGetData(), "Failed to match report");
+
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing a `std::variant` of type `VtInputCursorPositionReport` row 24 and col 80.
+    std::optional<cmspk::term::VtInput> vtin = dut.getData();
+    cr_assert(vtin, "Failed to match report");
+    cr_assert(std::holds_alternative<cmspk::term::VtInputReport>(*vtin), "Failed to match report");
+    cmspk::term::VtInputReport vtReport = std::get<cmspk::term::VtInputReport>(*vtin);
+    cr_assert(std::holds_alternative<cmspk::term::VtInputCursorPositionReport>(vtReport), "Failed to match report");
+    cmspk::term::VtInputCursorPositionReport vtCursorReport = std::get<cmspk::term::VtInputCursorPositionReport>(vtReport);
+    cr_assert(vtCursorReport.col == 80, "Expected col to be 80, got %d", vtCursorReport.col);
+    cr_assert(vtCursorReport.row == 24, "Expected row to be 24, got %d", vtCursorReport.row);
+
+    /// __then__ VtInputFromCharacters does not have data
+    cr_assert(not(dut.canGetData()), "Failed to match report");
+}
 // ================[ END test suite ]==================
