@@ -94,13 +94,13 @@ struct VtInputSequenceParserContext {
     }
 
     void acceptChar(char8_t character) noexcept {
-        char8_t buffer[1]{character};
+        char8_t buffer[2]{character, 0};  // don't forget the string terminator !
         // buffer[0] = character;
         rawAccumulator.append(buffer);
     }
 
     void acceptAsDigit(char8_t character) noexcept {
-        char8_t buffer[1]{character};
+        char8_t buffer[2]{character, 0};  // don't forget the string terminator !
         // buffer[0] = character;
         rawAccumulator.append(buffer);
         if (isWaitingForFirstNumberOrCommand() || isWaitingForNumberSeparatorOrCommand()) {
@@ -136,6 +136,7 @@ struct VtInputSequenceParserContext {
     bool isDigit(char8_t character) const noexcept { return character >= '0' && character <= '9'; }
     bool isCommand(char8_t character) const noexcept { return (character >= 'A' && character <= 'Z') || character == '~'; }
     bool isNumberSeparator(char8_t character) const noexcept { return character == ';'; }
+
     bool canAcceptAsCsi(char8_t character) const noexcept {
         if (!isCsi(character)) return false;
         return isWaitingForCsi();

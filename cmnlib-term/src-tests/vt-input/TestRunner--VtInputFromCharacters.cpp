@@ -135,4 +135,46 @@ Test(VtInputFromCharacters, should_return_keys_on_reading_an_octet_with_value_12
     }
 }
 
+struct ReadingMultiCharKeySpec {
+    std::string description;
+    std::basic_string<char8_t> givenInput;
+    cmspk::term::VtInputKey expectedKey;
+};
+Test(VtInputFromCharacters, should_return_keys_on_recognizing_a_multiple_characters_sequence) {
+    /// __For any enum value _K_ in `VtInputKey` that is matched by a sequence of at least 2 characters__
+    std::vector<ReadingMultiCharKeySpec> toBeTested{
+        {.description = "Arrow up", .givenInput = u8"\x1b[A", .expectedKey = cmspk::term::VtInputKey::arrow_up},
+        {.description = "Arrow down", .givenInput = u8"\x1b[B", .expectedKey = cmspk::term::VtInputKey::arrow_down},
+        {.description = "Arrow left", .givenInput = u8"\x1b[C", .expectedKey = cmspk::term::VtInputKey::arrow_left},
+        {.description = "Arrow right", .givenInput = u8"\x1b[D", .expectedKey = cmspk::term::VtInputKey::arrow_right}};
+    for (ReadingMultiCharKeySpec spec : toBeTested) {
+        cmspk::term::VtInputFromCharacters dut;
+
+        /// __given__ VtInputFromCharacters has been reset
+        dut.reset();
+
+        /// __when__ VtInputFromCharacters is fed with a character sequence that should be recognized as _K_
+        for (char8_t c : spec.givenInput) {
+            cr_assert(dut.canAppend(), "Failed for input value from %s, before appending char code %d", spec.description.c_str(), (uint16_t)c);
+            cr_assert(not(dut.canGetData()), "Failed for input value from %s, before appending char code %d", spec.description.c_str(), (uint16_t)c);
+            cr_assert(dut.append(c), "Failed for input value from %s, when appending char code %d", spec.description.c_str(), (uint16_t)c);
+        }
+
+        /// __then__ VtInputFromCharacters does not accept characters anymore
+        cr_assert(not(dut.canAppend()), "Failed for input value from %s", spec.description.c_str());
+
+        /// __then__ VtInputFromCharacters does have data
+        cr_assert(dut.canGetData(), "Failed for input value from %s", spec.description.c_str());
+
+        /// __then__ the VtInputFromCharacters will return a `std::variant` containing _K_.
+        std::optional<cmspk::term::VtInput> vtin = dut.getData();
+        cr_assert(vtin, "Failed for input value from %s", spec.description.c_str());
+        cr_assert(std::holds_alternative<cmspk::term::VtInputKey>(*vtin), "Failed for input value from %s", spec.description.c_str());
+        cmspk::term::VtInputKey vtKey = std::get<cmspk::term::VtInputKey>(*vtin);
+        cr_assert((spec.expectedKey == vtKey), "Failed for input value from %s, expected %d, got %d", spec.description.c_str(), spec.expectedKey, vtKey);
+
+        /// __then__ VtInputFromCharacters does not have data
+        cr_assert(not(dut.canGetData()), "Failed for input value from %s", spec.description.c_str());
+    }
+}
 // ================[ END test suite ]==================
