@@ -251,4 +251,117 @@ Test(VtInputFromCharacters, should_fall_back_to_single_character_conversion_when
     /// __then__ VtInputFromCharacters does not have data
     cr_assert(not(dut.canGetData()));
 }
+
+Test(VtInputFromCharacters, should_start_a_new_sequence_match_when_the_current_sequence_is_broken_by_the_next_character) {
+    /// __given__ VtInputFromCharacters has been reset
+    cmspk::term::VtInputFromCharacters dut;
+    dut.reset();
+
+    /// __when__ VtInputFromCharacters is fed with the character sequence "\x1b[\x1b[A"
+    std::basic_string<char8_t> toBeTested = u8"\x1b";
+    toBeTested.append(u8"[\x1b");
+    toBeTested.append(u8"[A");
+    uint16_t count = 0;
+    for (char8_t c : toBeTested) {
+        ++count;
+        cr_assert(dut.canAppend(), "Failed before appending char code %d (position %d)", (uint16_t)c, count);
+        if (count < 4) {
+            cr_assert(not(dut.canGetData()), "Failed before appending char code %d (position %d)", (uint16_t)c, count);
+        } else {
+            cr_assert(dut.canGetData(), "Failed before appending char code %d (position %d)", (uint16_t)c, count);
+        }
+        cr_assert(dut.append(c), "Failed when appending char code %d (position %d)", (uint16_t)c, count);
+    }
+
+    /// __then__ VtInputFromCharacters does not accept characters anymore
+    cr_assert(not(dut.canAppend()));
+
+    /// __then__ VtInputFromCharacters does have data
+    cr_assert(dut.canGetData());
+
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ESCAPE`
+    std::optional<cmspk::term::VtInput> vtin = dut.getData();
+    cr_assert(vtin);
+    cr_assert(std::holds_alternative<cmspk::term::VtInputKey>(*vtin));
+    cmspk::term::VtInputKey vtKey = std::get<cmspk::term::VtInputKey>(*vtin);
+    cr_assert((cmspk::term::VtInputKey::ESCAPE == vtKey), "Expected %d, got %d", cmspk::term::VtInputKey::ESCAPE, vtKey);
+
+    /// __then__ VtInputFromCharacters does have data
+    cr_assert(dut.canGetData());
+
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the printable character `[` ;
+    vtin = dut.getData();
+    cr_assert(vtin);
+    cr_assert(std::holds_alternative<char8_t>(*vtin));
+    char8_t printable = std::get<char8_t>(*vtin);
+    cr_assert((91 == printable), "Expected %d, got %d", 91, (uint16_t)printable);
+
+    /// __then__ VtInputFromCharacters does have data
+    cr_assert(dut.canGetData());
+
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ARROW_UP` ;
+    vtin = dut.getData();
+    cr_assert(vtin);
+    cr_assert(std::holds_alternative<cmspk::term::VtInputKey>(*vtin));
+    vtKey = std::get<cmspk::term::VtInputKey>(*vtin);
+    cr_assert((cmspk::term::VtInputKey::arrow_up == vtKey), "Expected %d, got %d", cmspk::term::VtInputKey::arrow_up, vtKey);
+
+    /// __then__ VtInputFromCharacters does not have data
+    cr_assert(not(dut.canGetData()));
+}
+
+Test(VtInputFromCharacters, should_give_access_to_available_data_from_the_broken_previous_sequence_while_still_accepting_characters_for_the_current_sequence) {
+    /// __given__ VtInputFromCharacters has been reset
+
+    /// __when__ VtInputFromCharacters is fed with the character sequence "\x1b[\x1b"
+
+    /// __then__ VtInputFromCharacters still accept characters
+
+    /// __then__ VtInputFromCharacters does have data
+
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ESCAPE`
+
+    /// __then__ VtInputFromCharacters does have data
+
+    /// __then__ the VtInputFromCharacters will return  a `std::variant` containing the printable character `[`
+
+    /// __then__ VtInputFromCharacters does not have data
+    cr_assert(false, "not implemented");
+}
+
+Test(VtInputFromCharacters, should_fall_back_to_single_character_conversion_when_it_is_aborted_in_the_middle_of_a_multi_octets_sequence) {
+    /// __given__ VtInputFromCharacters has been reset and been fed with the character sequence "\x1b["
+
+    /// __when__ VtInputFromCharacters is aborted
+
+    /// __then__ VtInputFromCharacters does not accept characters anymore
+
+    /// __then__ VtInputFromCharacters does have data
+
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ESCAPE` ;
+
+    /// __then__ VtInputFromCharacters does have data
+
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the printable character `[` ;
+
+    /// __then__ VtInputFromCharacters does not have data
+    cr_assert(false, "not implemented");
+}
+
+Test(VtInputFromCharacters, should_clear_its_internal_state_when_it_is_reset) {
+    /// __given__ VtInputFromCharacters has been reset and been fed with the character sequence "\x1b["
+
+    /// __when__ VtInputFromCharacters is reset
+
+    /// __then__ VtInputFromCharacters still accept characters
+
+    /// __then__ the VtInputFromCharacters contains no data
+
+    /// __when__ VtInputFromCharacters is fed with the single character `A`
+
+    /// __then__ VtInputFromCharacters does not accept characters anymore
+
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing `A`.
+    cr_assert(false, "not implemented");
+}
 // ================[ END test suite ]==================

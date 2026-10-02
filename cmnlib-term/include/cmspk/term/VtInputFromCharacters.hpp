@@ -123,6 +123,8 @@ struct VtInputSequenceParserContext {
     bool isParsingMessageOrDone() const noexcept { return state != VtInputSequenceParserState::WAITING_FOR_ESCAPE; }
 
     bool isDone() const noexcept { return state == VtInputSequenceParserState::ITS_A_MATCH; }
+    bool isParsing() const noexcept { return state != VtInputSequenceParserState::WAITING_FOR_ESCAPE && !isDone(); }
+    bool isNotParsing() const noexcept { return !isParsing(); }
     bool isWaitingForCsi() const noexcept { return state == VtInputSequenceParserState::WAITING_FOR_CSI; }
     bool isWaitingForFirstNumberOrCommand() const noexcept { return state == VtInputSequenceParserState::WAITING_FOR_FIRST_NUMBER_OR_COMMAND; }
     bool isWaitingForNumberSeparatorOrCommand() const noexcept { return state == VtInputSequenceParserState::WAITING_FOR_NUMBER_SEPARATOR_OR_COMMAND; }
@@ -320,9 +322,9 @@ __then__ VtInputFromCharacters does not have data
 class VtInputFromCharacters {
   public:
     // feeding
-    bool canAppend() { return data.empty(); }
+    bool canAppend() { return sequenceParserContext.isParsing() || data.empty(); }
     std::expected<void, VtInputFromCharactersError> append(char8_t character) {
-        if (!data.empty() || sequenceParserContext.isDone()) {
+        if (!canAppend()) {
             return std::unexpected(VtInputFromCharactersError::CANNOT_ACCEPT_ANY_NEW_CHARACTER);
         }
 
