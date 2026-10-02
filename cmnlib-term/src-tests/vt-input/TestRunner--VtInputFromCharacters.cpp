@@ -184,7 +184,7 @@ Test(VtInputFromCharacters, should_return_vt_report_on_recognizing_cursor_positi
     dut.reset();
 
     /// __when__ VtInputFromCharacters is fed with the character sequence "\x1b[24;80R"
-    std::basic_string toBeTested = u8"\x1b[24;80R";
+    std::basic_string<char8_t> toBeTested = u8"\x1b[24;80R";
     for (char8_t c : toBeTested) {
         cr_assert(dut.canAppend(), "Failed before appending char code %d", (uint16_t)c);
         cr_assert(not(dut.canGetData()), "Failed before appending char code %d", (uint16_t)c);
@@ -209,5 +209,46 @@ Test(VtInputFromCharacters, should_return_vt_report_on_recognizing_cursor_positi
 
     /// __then__ VtInputFromCharacters does not have data
     cr_assert(not(dut.canGetData()), "Failed to match report");
+}
+
+Test(VtInputFromCharacters, should_fall_back_to_single_character_conversion_when_a_sequence_is_finally_not_recognized) {
+    /// __given__ VtInputFromCharacters has been reset
+    cmspk::term::VtInputFromCharacters dut;
+    dut.reset();
+
+    /// __when__ VtInputFromCharacters is fed with the character sequence "\x1bA"
+    std::basic_string<char8_t> toBeTested = u8"\x1b";
+    toBeTested.append(u8"A");
+    for (char8_t c : toBeTested) {
+        cr_assert(dut.canAppend(), "Failed before appending char code %d", (uint16_t)c);
+        cr_assert(not(dut.canGetData()), "Failed before appending char code %d", (uint16_t)c);
+        cr_assert(dut.append(c), "Failed when appending char code %d", (uint16_t)c);
+    }
+
+    /// __then__ VtInputFromCharacters does not accept characters anymore
+    cr_assert(not(dut.canAppend()));
+
+    /// __then__ VtInputFromCharacters does have data
+    cr_assert(dut.canGetData());
+
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ESCAPE`
+    std::optional<cmspk::term::VtInput> vtin = dut.getData();
+    cr_assert(vtin);
+    cr_assert(std::holds_alternative<cmspk::term::VtInputKey>(*vtin));
+    cmspk::term::VtInputKey vtKey = std::get<cmspk::term::VtInputKey>(*vtin);
+    cr_assert((cmspk::term::VtInputKey::ESCAPE == vtKey), "Expected %d, got %d", cmspk::term::VtInputKey::ESCAPE, vtKey);
+
+    /// __then__ VtInputFromCharacters does have data
+    cr_assert(dut.canGetData());
+
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the printable character `A`
+    vtin = dut.getData();
+    cr_assert(vtin);
+    cr_assert(std::holds_alternative<char8_t>(*vtin));
+    char8_t printable = std::get<char8_t>(*vtin);
+    cr_assert((65 == printable), "Expected %d, got %d", 65, (uint16_t)printable);
+
+    /// __then__ VtInputFromCharacters does not have data
+    cr_assert(not(dut.canGetData()));
 }
 // ================[ END test suite ]==================
