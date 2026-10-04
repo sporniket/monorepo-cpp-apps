@@ -43,27 +43,27 @@ enum class VtInputSequenceParserState {
     /**
      * Initial state, stay at this state until getting ASCII 27 ('\x1b').
      */
-    WAITING_FOR_ESCAPE,
+    waiting_for_escape,
     /**
      * Stay at this state until getting '['.
      */
-    WAITING_FOR_CSI,
+    waiting_for_csi,
     /**
      * Stay at this state until getting a digit or a command.
      */
-    WAITING_FOR_FIRST_NUMBER_OR_COMMAND,
+    waiting_for_first_number_or_command,
     /**
      * Stay at this state until getting a ';' or a command.
      */
-    WAITING_FOR_NUMBER_SEPARATOR_OR_COMMAND,
+    waiting_for_number_separator_or_command,
     /**
      * Stay at this state until getting a command.
      */
-    WAITING_FOR_COMMAND,
+    waiting_for_command,
     /**
      * Final state, the state machine MUST be reset.
      */
-    ITS_A_MATCH
+    its_a_match
 };
 
 /**
@@ -79,14 +79,14 @@ struct VtInputSequenceParserContext {
     std::basic_string<char8_t> firstNumber;
     std::basic_string<char8_t> secondNumber;
 
-    VtInputSequenceParserContext() noexcept : state(VtInputSequenceParserState::WAITING_FOR_ESCAPE), command(std::nullopt) {
+    VtInputSequenceParserContext() noexcept : state(VtInputSequenceParserState::waiting_for_escape), command(std::nullopt) {
         firstNumber.reserve(max_number_size);
         secondNumber.reserve(max_number_size);
         rawAccumulator.reserve(14);  // up to 2 5-digits numbers + char 27 + csi + separator + command
     }
 
     void reset() noexcept {
-        state = VtInputSequenceParserState::WAITING_FOR_ESCAPE;
+        state = VtInputSequenceParserState::waiting_for_escape;
         rawAccumulator.clear();
         command = std::nullopt;
         firstNumber.clear();
@@ -120,15 +120,15 @@ struct VtInputSequenceParserContext {
         return ((*command) == 'R' && !firstNumber.empty() && !secondNumber.empty());
     }
 
-    bool isParsingMessageOrDone() const noexcept { return state != VtInputSequenceParserState::WAITING_FOR_ESCAPE; }
+    bool isParsingMessageOrDone() const noexcept { return state != VtInputSequenceParserState::waiting_for_escape; }
 
-    bool isDone() const noexcept { return state == VtInputSequenceParserState::ITS_A_MATCH; }
-    bool isParsing() const noexcept { return state != VtInputSequenceParserState::WAITING_FOR_ESCAPE && !isDone(); }
+    bool isDone() const noexcept { return state == VtInputSequenceParserState::its_a_match; }
+    bool isParsing() const noexcept { return state != VtInputSequenceParserState::waiting_for_escape && !isDone(); }
     bool isNotParsing() const noexcept { return !isParsing(); }
-    bool isWaitingForCsi() const noexcept { return state == VtInputSequenceParserState::WAITING_FOR_CSI; }
-    bool isWaitingForFirstNumberOrCommand() const noexcept { return state == VtInputSequenceParserState::WAITING_FOR_FIRST_NUMBER_OR_COMMAND; }
-    bool isWaitingForNumberSeparatorOrCommand() const noexcept { return state == VtInputSequenceParserState::WAITING_FOR_NUMBER_SEPARATOR_OR_COMMAND; }
-    bool isWaitingForSecondNumberOrCommand() const noexcept { return state == VtInputSequenceParserState::WAITING_FOR_COMMAND; }
+    bool isWaitingForCsi() const noexcept { return state == VtInputSequenceParserState::waiting_for_csi; }
+    bool isWaitingForFirstNumberOrCommand() const noexcept { return state == VtInputSequenceParserState::waiting_for_first_number_or_command; }
+    bool isWaitingForNumberSeparatorOrCommand() const noexcept { return state == VtInputSequenceParserState::waiting_for_number_separator_or_command; }
+    bool isWaitingForSecondNumberOrCommand() const noexcept { return state == VtInputSequenceParserState::waiting_for_command; }
     bool isWaitingForCommand() const noexcept {
         return isWaitingForFirstNumberOrCommand() || isWaitingForNumberSeparatorOrCommand() || isWaitingForSecondNumberOrCommand();
     }
@@ -157,11 +157,11 @@ struct VtInputSequenceParserContext {
         return isWaitingForNumberSeparatorOrCommand();
     }
 
-    void waitForCsi() noexcept { state = VtInputSequenceParserState::WAITING_FOR_CSI; }
-    void waitForFirstNumberOrCommand() noexcept { state = VtInputSequenceParserState::WAITING_FOR_FIRST_NUMBER_OR_COMMAND; }
-    void waitForNumberSeparatorOrCommand() noexcept { state = VtInputSequenceParserState::WAITING_FOR_NUMBER_SEPARATOR_OR_COMMAND; }
-    void waitForCommand() noexcept { state = VtInputSequenceParserState::WAITING_FOR_COMMAND; }
-    void done() noexcept { state = VtInputSequenceParserState::ITS_A_MATCH; }
+    void waitForCsi() noexcept { state = VtInputSequenceParserState::waiting_for_csi; }
+    void waitForFirstNumberOrCommand() noexcept { state = VtInputSequenceParserState::waiting_for_first_number_or_command; }
+    void waitForNumberSeparatorOrCommand() noexcept { state = VtInputSequenceParserState::waiting_for_number_separator_or_command; }
+    void waitForCommand() noexcept { state = VtInputSequenceParserState::waiting_for_command; }
+    void done() noexcept { state = VtInputSequenceParserState::its_a_match; }
 
     uint32_t uint32FromFirstNumber() { return uint32FromNumber(firstNumber); }
     uint32_t uint32FromSecondNumber() { return uint32FromNumber(secondNumber); }
@@ -472,8 +472,8 @@ class VtInputFromCharacters {
     void processMessage() {
         if (sequenceParserContext.isCursorPositionReport()) {
             data.push_back(VtInputCursorPositionReport(sequenceParserContext.uint32FromFirstNumber(), sequenceParserContext.uint32FromSecondNumber()));
-        } else if (known_keys.contains(sequenceParserContext.rawAccumulator)) {
-            data.push_back(known_keys.at(sequenceParserContext.rawAccumulator));
+        } else if (known_multi_char_key_sequences.contains(sequenceParserContext.rawAccumulator)) {
+            data.push_back(known_multi_char_key_sequences.at(sequenceParserContext.rawAccumulator));
         } else {
             // DUPLICATE from append
             for (char8_t c : sequenceParserContext.rawAccumulator) {
@@ -515,40 +515,34 @@ class VtInputFromCharacters {
 
     std::deque<VtInput> data;
     VtInputSequenceParserContext sequenceParserContext;
-    const std::map<std::basic_string<char8_t>, VtInputKey> known_keys{
-        {u8"\x1b[A", VtInputKey::arrow_up},
-        {u8"\x1b[B", VtInputKey::arrow_down},
-        {u8"\x1b[C", VtInputKey::arrow_left},
-        {u8"\x1b[D", VtInputKey::arrow_right},
-    };
-    const std::vector<VtInput> single_octet_map{VtInputKey::CTRL_SPACE,  // 0
-                                                VtInputKey::CTRL_A,
-                                                VtInputKey::CTRL_B,
-                                                VtInputKey::CTRL_C,
-                                                VtInputKey::CTRL_D,
-                                                VtInputKey::CTRL_E,
-                                                VtInputKey::CTRL_F,  // 6
-                                                VtInputKey::CTRL_G,
-                                                VtInputKey::CTRL_H,
-                                                VtInputKey::HTAB,
-                                                VtInputKey::CTRL_J,
-                                                VtInputKey::CTRL_K,
-                                                VtInputKey::CTRL_L,
-                                                VtInputKey::RETURN,  // 13
-                                                VtInputKey::CTRL_N,
-                                                VtInputKey::CTRL_O,
-                                                VtInputKey::CTRL_P,
-                                                VtInputKey::CTRL_Q,
-                                                VtInputKey::CTRL_R,
-                                                VtInputKey::CTRL_S,
-                                                VtInputKey::CTRL_T,  // 20
-                                                VtInputKey::CTRL_U,
-                                                VtInputKey::CTRL_V,
-                                                VtInputKey::CTRL_W,
-                                                VtInputKey::CTRL_X,
-                                                VtInputKey::CTRL_Y,
-                                                VtInputKey::CTRL_Z,
-                                                VtInputKey::ESCAPE,  // 27
+    const std::vector<VtInput> single_octet_map{VtInputKey::ctrl_space,  // 0
+                                                VtInputKey::ctrl_a,
+                                                VtInputKey::ctrl_b,
+                                                VtInputKey::ctrl_c,
+                                                VtInputKey::ctrl_d,
+                                                VtInputKey::ctrl_e,
+                                                VtInputKey::ctrl_f,  // 6
+                                                VtInputKey::ctrl_g,
+                                                VtInputKey::ctrl_h,
+                                                VtInputKey::htab,
+                                                VtInputKey::ctrl_j,
+                                                VtInputKey::ctrl_k,
+                                                VtInputKey::ctrl_l,
+                                                VtInputKey::return_key,  // 13
+                                                VtInputKey::ctrl_n,
+                                                VtInputKey::ctrl_o,
+                                                VtInputKey::ctrl_p,
+                                                VtInputKey::ctrl_q,
+                                                VtInputKey::ctrl_r,
+                                                VtInputKey::ctrl_s,
+                                                VtInputKey::ctrl_t,  // 20
+                                                VtInputKey::ctrl_u,
+                                                VtInputKey::ctrl_v,
+                                                VtInputKey::ctrl_w,
+                                                VtInputKey::ctrl_x,
+                                                VtInputKey::ctrl_y,
+                                                VtInputKey::ctrl_z,
+                                                VtInputKey::escape,  // 27
                                                 VtInputUnknown(28),
                                                 VtInputUnknown(29),
                                                 VtInputUnknown(30),
@@ -648,7 +642,7 @@ class VtInputFromCharacters {
                                                 (char8_t)124,
                                                 (char8_t)125,
                                                 (char8_t)126,
-                                                VtInputKey::BACKSPACE,
+                                                VtInputKey::backspace,
                                                 (char8_t)128,
                                                 (char8_t)129,
                                                 (char8_t)130,

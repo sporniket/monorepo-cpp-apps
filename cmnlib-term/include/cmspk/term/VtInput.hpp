@@ -9,6 +9,7 @@
 #define __CMSPK__TERM__VTINPUT_HPP__
 
 // standard libs
+#include <map>
 #include <variant>
 
 namespace cmspk::term {
@@ -34,35 +35,35 @@ sequence (e.g. the CSI `escape+'['`), in other words, a CSI introduced key will 
 constants are subject to change at any time**
 ************************************************/
 enum class VtInputKey {
-    CTRL_SPACE = 0,
-    CTRL_A,
-    CTRL_B,
-    CTRL_C,
-    CTRL_D,
-    CTRL_E,
-    CTRL_F,
-    CTRL_G,
-    CTRL_H,
-    HTAB,
-    CTRL_J,
-    CTRL_K,
-    CTRL_L,
-    RETURN,
-    CTRL_N,
-    CTRL_O,
-    CTRL_P,
-    CTRL_Q,
-    CTRL_R,
-    CTRL_S,
-    CTRL_T,
-    CTRL_U,
-    CTRL_V,
-    CTRL_W,
-    CTRL_X,
-    CTRL_Y,
-    CTRL_Z,
-    ESCAPE,
-    BACKSPACE = 127,
+    ctrl_space = 0,
+    ctrl_a,
+    ctrl_b,
+    ctrl_c,
+    ctrl_d,
+    ctrl_e,
+    ctrl_f,
+    ctrl_g,
+    ctrl_h,
+    htab,
+    ctrl_j,
+    ctrl_k,
+    ctrl_l,
+    return_key,  // because return is a C++ keyword
+    ctrl_n,
+    ctrl_o,
+    ctrl_p,
+    ctrl_q,
+    ctrl_r,
+    ctrl_s,
+    ctrl_t,
+    ctrl_u,
+    ctrl_v,
+    ctrl_w,
+    ctrl_x,
+    ctrl_y,
+    ctrl_z,
+    escape,
+    backspace = 127,
     // and now keys mapped to multi-octets sequence (with CSI)
     // -- arrows
     arrow_up = 0x1b5b0000,
@@ -100,6 +101,16 @@ set encoding) ;</li> <li>or none of the formers, i.e. an _unknown_ input, and as
 </ul>
 ************************************************/
 using VtInput = std::variant<VtInputReport, VtInputKey, char8_t, VtInputUnknown>;
+
+/************************************************
+Registry of known multi-char sequences mapped to a VtInputKey.
+************************************************/
+const std::map<std::basic_string<char8_t>, VtInputKey> known_multi_char_key_sequences{
+    {u8"\x1b[A", VtInputKey::arrow_up},
+    {u8"\x1b[B", VtInputKey::arrow_down},
+    {u8"\x1b[C", VtInputKey::arrow_left},
+    {u8"\x1b[D", VtInputKey::arrow_right},
+};
 
 // ================[ END OF CODE ]================
 }  // namespace cmspk::term

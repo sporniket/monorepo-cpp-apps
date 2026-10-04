@@ -93,20 +93,20 @@ struct ReadingKeySpec {
 Test(VtInputFromCharacters, should_return_keys_on_reading_an_octet_with_value_127_or_in_range_0_to_27) {
     /// __for__ any character _c_ in [0,..,26,127]
     std::vector<ReadingKeySpec> toBeTested{
-        {.givenChar = 0, .expectedKey = cmspk::term::VtInputKey::CTRL_SPACE}, {.givenChar = 1, .expectedKey = cmspk::term::VtInputKey::CTRL_A},
-        {.givenChar = 2, .expectedKey = cmspk::term::VtInputKey::CTRL_B},     {.givenChar = 3, .expectedKey = cmspk::term::VtInputKey::CTRL_C},
-        {.givenChar = 4, .expectedKey = cmspk::term::VtInputKey::CTRL_D},     {.givenChar = 5, .expectedKey = cmspk::term::VtInputKey::CTRL_E},
-        {.givenChar = 6, .expectedKey = cmspk::term::VtInputKey::CTRL_F},     {.givenChar = 7, .expectedKey = cmspk::term::VtInputKey::CTRL_G},
-        {.givenChar = 8, .expectedKey = cmspk::term::VtInputKey::CTRL_H},     {.givenChar = 9, .expectedKey = cmspk::term::VtInputKey::HTAB},
-        {.givenChar = 10, .expectedKey = cmspk::term::VtInputKey::CTRL_J},    {.givenChar = 11, .expectedKey = cmspk::term::VtInputKey::CTRL_K},
-        {.givenChar = 12, .expectedKey = cmspk::term::VtInputKey::CTRL_L},    {.givenChar = 13, .expectedKey = cmspk::term::VtInputKey::RETURN},
-        {.givenChar = 14, .expectedKey = cmspk::term::VtInputKey::CTRL_N},    {.givenChar = 15, .expectedKey = cmspk::term::VtInputKey::CTRL_O},
-        {.givenChar = 16, .expectedKey = cmspk::term::VtInputKey::CTRL_P},    {.givenChar = 17, .expectedKey = cmspk::term::VtInputKey::CTRL_Q},
-        {.givenChar = 18, .expectedKey = cmspk::term::VtInputKey::CTRL_R},    {.givenChar = 19, .expectedKey = cmspk::term::VtInputKey::CTRL_S},
-        {.givenChar = 20, .expectedKey = cmspk::term::VtInputKey::CTRL_T},    {.givenChar = 21, .expectedKey = cmspk::term::VtInputKey::CTRL_U},
-        {.givenChar = 22, .expectedKey = cmspk::term::VtInputKey::CTRL_V},    {.givenChar = 23, .expectedKey = cmspk::term::VtInputKey::CTRL_W},
-        {.givenChar = 24, .expectedKey = cmspk::term::VtInputKey::CTRL_X},    {.givenChar = 25, .expectedKey = cmspk::term::VtInputKey::CTRL_Y},
-        {.givenChar = 26, .expectedKey = cmspk::term::VtInputKey::CTRL_Z},    {.givenChar = 127, .expectedKey = cmspk::term::VtInputKey::BACKSPACE}};
+        {.givenChar = 0, .expectedKey = cmspk::term::VtInputKey::ctrl_space}, {.givenChar = 1, .expectedKey = cmspk::term::VtInputKey::ctrl_a},
+        {.givenChar = 2, .expectedKey = cmspk::term::VtInputKey::ctrl_b},     {.givenChar = 3, .expectedKey = cmspk::term::VtInputKey::ctrl_c},
+        {.givenChar = 4, .expectedKey = cmspk::term::VtInputKey::ctrl_d},     {.givenChar = 5, .expectedKey = cmspk::term::VtInputKey::ctrl_e},
+        {.givenChar = 6, .expectedKey = cmspk::term::VtInputKey::ctrl_f},     {.givenChar = 7, .expectedKey = cmspk::term::VtInputKey::ctrl_g},
+        {.givenChar = 8, .expectedKey = cmspk::term::VtInputKey::ctrl_h},     {.givenChar = 9, .expectedKey = cmspk::term::VtInputKey::htab},
+        {.givenChar = 10, .expectedKey = cmspk::term::VtInputKey::ctrl_j},    {.givenChar = 11, .expectedKey = cmspk::term::VtInputKey::ctrl_k},
+        {.givenChar = 12, .expectedKey = cmspk::term::VtInputKey::ctrl_l},    {.givenChar = 13, .expectedKey = cmspk::term::VtInputKey::return_key},
+        {.givenChar = 14, .expectedKey = cmspk::term::VtInputKey::ctrl_n},    {.givenChar = 15, .expectedKey = cmspk::term::VtInputKey::ctrl_o},
+        {.givenChar = 16, .expectedKey = cmspk::term::VtInputKey::ctrl_p},    {.givenChar = 17, .expectedKey = cmspk::term::VtInputKey::ctrl_q},
+        {.givenChar = 18, .expectedKey = cmspk::term::VtInputKey::ctrl_r},    {.givenChar = 19, .expectedKey = cmspk::term::VtInputKey::ctrl_s},
+        {.givenChar = 20, .expectedKey = cmspk::term::VtInputKey::ctrl_t},    {.givenChar = 21, .expectedKey = cmspk::term::VtInputKey::ctrl_u},
+        {.givenChar = 22, .expectedKey = cmspk::term::VtInputKey::ctrl_v},    {.givenChar = 23, .expectedKey = cmspk::term::VtInputKey::ctrl_w},
+        {.givenChar = 24, .expectedKey = cmspk::term::VtInputKey::ctrl_x},    {.givenChar = 25, .expectedKey = cmspk::term::VtInputKey::ctrl_y},
+        {.givenChar = 26, .expectedKey = cmspk::term::VtInputKey::ctrl_z},    {.givenChar = 127, .expectedKey = cmspk::term::VtInputKey::backspace}};
     for (ReadingKeySpec spec : toBeTested) {
         char8_t c = spec.givenChar;
         cmspk::term::VtInputFromCharacters dut;
@@ -231,12 +231,12 @@ Test(VtInputFromCharacters, should_fall_back_to_single_character_conversion_when
     /// __then__ VtInputFromCharacters does have data
     cr_assert(dut.canGetData());
 
-    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ESCAPE`
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `escape`
     std::optional<cmspk::term::VtInput> vtin = dut.getData();
     cr_assert(vtin);
     cr_assert(std::holds_alternative<cmspk::term::VtInputKey>(*vtin));
     cmspk::term::VtInputKey vtKey = std::get<cmspk::term::VtInputKey>(*vtin);
-    cr_assert((cmspk::term::VtInputKey::ESCAPE == vtKey), "Expected %d, got %d", cmspk::term::VtInputKey::ESCAPE, vtKey);
+    cr_assert((cmspk::term::VtInputKey::escape == vtKey), "Expected %d, got %d", cmspk::term::VtInputKey::escape, vtKey);
 
     /// __then__ VtInputFromCharacters does have data
     cr_assert(dut.canGetData());
@@ -279,12 +279,12 @@ Test(VtInputFromCharacters, should_start_a_new_sequence_match_when_the_current_s
     /// __then__ VtInputFromCharacters does have data
     cr_assert(dut.canGetData());
 
-    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ESCAPE`
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `escape`
     std::optional<cmspk::term::VtInput> vtin = dut.getData();
     cr_assert(vtin);
     cr_assert(std::holds_alternative<cmspk::term::VtInputKey>(*vtin));
     cmspk::term::VtInputKey vtKey = std::get<cmspk::term::VtInputKey>(*vtin);
-    cr_assert((cmspk::term::VtInputKey::ESCAPE == vtKey), "Expected %d, got %d", cmspk::term::VtInputKey::ESCAPE, vtKey);
+    cr_assert((cmspk::term::VtInputKey::escape == vtKey), "Expected %d, got %d", cmspk::term::VtInputKey::escape, vtKey);
 
     /// __then__ VtInputFromCharacters does have data
     cr_assert(dut.canGetData());
@@ -336,12 +336,12 @@ Test(VtInputFromCharacters, should_give_access_to_available_data_from_the_broken
     /// __then__ VtInputFromCharacters does have data
     cr_assert(dut.canGetData());
 
-    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ESCAPE`
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `escape`
     std::optional<cmspk::term::VtInput> vtin = dut.getData();
     cr_assert(vtin);
     cr_assert(std::holds_alternative<cmspk::term::VtInputKey>(*vtin));
     cmspk::term::VtInputKey vtKey = std::get<cmspk::term::VtInputKey>(*vtin);
-    cr_assert((cmspk::term::VtInputKey::ESCAPE == vtKey), "Expected %d, got %d", cmspk::term::VtInputKey::ESCAPE, vtKey);
+    cr_assert((cmspk::term::VtInputKey::escape == vtKey), "Expected %d, got %d", cmspk::term::VtInputKey::escape, vtKey);
 
     /// __then__ VtInputFromCharacters does have data
     cr_assert(dut.canGetData());
@@ -378,12 +378,12 @@ Test(VtInputFromCharacters, should_fall_back_to_single_character_conversion_when
     /// __then__ VtInputFromCharacters does have data
     cr_assert(dut.canGetData());
 
-    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `ESCAPE` ;
+    /// __then__ the VtInputFromCharacters will return a `std::variant` containing the `VtInputKey` value `escape` ;
     std::optional<cmspk::term::VtInput> vtin = dut.getData();
     cr_assert(vtin);
     cr_assert(std::holds_alternative<cmspk::term::VtInputKey>(*vtin));
     cmspk::term::VtInputKey vtKey = std::get<cmspk::term::VtInputKey>(*vtin);
-    cr_assert((cmspk::term::VtInputKey::ESCAPE == vtKey), "Expected %d, got %d", cmspk::term::VtInputKey::ESCAPE, vtKey);
+    cr_assert((cmspk::term::VtInputKey::escape == vtKey), "Expected %d, got %d", cmspk::term::VtInputKey::escape, vtKey);
 
     /// __then__ VtInputFromCharacters does have data
     cr_assert(dut.canGetData());

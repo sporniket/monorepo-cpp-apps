@@ -121,17 +121,17 @@ Test(VtInputSource, should_process_single_octet_values__printable_characters_and
     cmspk::term::VtInputSource source(std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new DataSourceFromSequence(toBeTested)));
 
     uint16_t count = 0;
-    std::vector<cmspk::term::VtInput> toBeExpected{cmspk::term::VtInputKey::CTRL_SPACE,
-                                                   cmspk::term::VtInputKey::CTRL_A,
-                                                   cmspk::term::VtInputKey::CTRL_B,
-                                                   cmspk::term::VtInputKey::CTRL_C,
-                                                   cmspk::term::VtInputKey::CTRL_D,
-                                                   cmspk::term::VtInputKey::CTRL_E,
-                                                   cmspk::term::VtInputKey::CTRL_Z,
+    std::vector<cmspk::term::VtInput> toBeExpected{cmspk::term::VtInputKey::ctrl_space,
+                                                   cmspk::term::VtInputKey::ctrl_a,
+                                                   cmspk::term::VtInputKey::ctrl_b,
+                                                   cmspk::term::VtInputKey::ctrl_c,
+                                                   cmspk::term::VtInputKey::ctrl_d,
+                                                   cmspk::term::VtInputKey::ctrl_e,
+                                                   cmspk::term::VtInputKey::ctrl_z,
                                                    (char8_t)' ',
                                                    (char8_t)'A',
                                                    (char8_t)'B',
-                                                   cmspk::term::VtInputKey::RETURN};
+                                                   cmspk::term::VtInputKey::return_key};
     for (cmspk::term::VtInput expectedInput : toBeExpected) {
         /// __when__ reading the next VtInput with `next()` as many time as the length of the sequence.
         std::expected<cmspk::term::VtInput, cmspk::io::IoErrorAscii> nextInput = source.next();
