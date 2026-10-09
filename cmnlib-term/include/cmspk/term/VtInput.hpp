@@ -9,7 +9,9 @@
 #define __CMSPK__TERM__VTINPUT_HPP__
 
 // standard libs
+#include <cstdint>
 #include <map>
+#include <string>
 #include <variant>
 
 namespace cmspk::term {
@@ -89,6 +91,7 @@ struct VtInputCursorPositionReport {
 Model of a Vt report, like the cursor position.
 ************************************************/
 using VtInputReport = std::variant<VtInputCursorPositionReport>;
+
 /************************************************
 A representation of a virtual terminal input
 
@@ -111,6 +114,50 @@ const std::map<std::basic_string<char8_t>, VtInputKey> known_multi_char_key_sequ
     {u8"\x1b[C", VtInputKey::arrow_left},
     {u8"\x1b[D", VtInputKey::arrow_right},
 };
+
+/************************************************
+Registry of VtInputKey names, us-ascii version, should be useless in C++26 with reflection.
+************************************************/
+static const std::map<VtInputKey, std::basic_string<char8_t>> vt_input_key_names_ascii{
+    {VtInputKey::ctrl_space, u8"ctrl_space"},  {VtInputKey::ctrl_a, u8"ctrl_a"},
+    {VtInputKey::ctrl_b, u8"ctrl_b"},          {VtInputKey::ctrl_c, u8"ctrl_c"},
+    {VtInputKey::ctrl_d, u8"ctrl_d"},          {VtInputKey::ctrl_e, u8"ctrl_e"},
+    {VtInputKey::ctrl_f, u8"ctrl_f"},          {VtInputKey::ctrl_g, u8"ctrl_g"},
+    {VtInputKey::ctrl_h, u8"ctrl_h"},          {VtInputKey::htab, u8"htab"},
+    {VtInputKey::ctrl_j, u8"ctrl_*"},          {VtInputKey::ctrl_k, u8"ctrl_k"},
+    {VtInputKey::ctrl_l, u8"ctrl_l"},          {VtInputKey::return_key, u8"return_key"},
+    {VtInputKey::ctrl_n, u8"ctrl_n"},          {VtInputKey::ctrl_o, u8"ctrl_o"},
+    {VtInputKey::ctrl_p, u8"ctrl_p"},          {VtInputKey::ctrl_q, u8"ctrl_q"},
+    {VtInputKey::ctrl_r, u8"ctrl_r"},          {VtInputKey::ctrl_s, u8"ctrl_s"},
+    {VtInputKey::ctrl_t, u8"ctrl_t"},          {VtInputKey::ctrl_u, u8"ctrl_u"},
+    {VtInputKey::ctrl_v, u8"ctrl_v"},          {VtInputKey::ctrl_w, u8"ctrl_w"},
+    {VtInputKey::ctrl_x, u8"ctrl_x"},          {VtInputKey::ctrl_y, u8"ctrl_y"},
+    {VtInputKey::ctrl_z, u8"ctrl_z"},          {VtInputKey::escape, u8"escape"},
+    {VtInputKey::backspace, u8"backspace"},    {VtInputKey::arrow_up, u8"arrow_up"},
+    {VtInputKey::arrow_down, u8"arrow_down"},  {VtInputKey::arrow_left, u8"arrow_left"},
+    {VtInputKey::arrow_right, u8"arrow_right"}};
+
+/************************************************
+Registry of VtInputKey names, should be useless in C++26 with reflection.
+************************************************/
+static const std::map<VtInputKey, std::basic_string<char32_t>> vt_input_key_names{
+    {VtInputKey::ctrl_space, U"ctrl_space"},  {VtInputKey::ctrl_a, U"ctrl_a"},
+    {VtInputKey::ctrl_b, U"ctrl_b"},          {VtInputKey::ctrl_c, U"ctrl_c"},
+    {VtInputKey::ctrl_d, U"ctrl_d"},          {VtInputKey::ctrl_e, U"ctrl_e"},
+    {VtInputKey::ctrl_f, U"ctrl_f"},          {VtInputKey::ctrl_g, U"ctrl_g"},
+    {VtInputKey::ctrl_h, U"ctrl_h"},          {VtInputKey::htab, U"htab"},
+    {VtInputKey::ctrl_j, U"ctrl_*"},          {VtInputKey::ctrl_k, U"ctrl_k"},
+    {VtInputKey::ctrl_l, U"ctrl_l"},          {VtInputKey::return_key, U"return_key"},
+    {VtInputKey::ctrl_n, U"ctrl_n"},          {VtInputKey::ctrl_o, U"ctrl_o"},
+    {VtInputKey::ctrl_p, U"ctrl_p"},          {VtInputKey::ctrl_q, U"ctrl_q"},
+    {VtInputKey::ctrl_r, U"ctrl_r"},          {VtInputKey::ctrl_s, U"ctrl_s"},
+    {VtInputKey::ctrl_t, U"ctrl_t"},          {VtInputKey::ctrl_u, U"ctrl_u"},
+    {VtInputKey::ctrl_v, U"ctrl_v"},          {VtInputKey::ctrl_w, U"ctrl_w"},
+    {VtInputKey::ctrl_x, U"ctrl_x"},          {VtInputKey::ctrl_y, U"ctrl_y"},
+    {VtInputKey::ctrl_z, U"ctrl_z"},          {VtInputKey::escape, U"escape"},
+    {VtInputKey::backspace, U"backspace"},    {VtInputKey::arrow_up, U"arrow_up"},
+    {VtInputKey::arrow_down, U"arrow_down"},  {VtInputKey::arrow_left, U"arrow_left"},
+    {VtInputKey::arrow_right, U"arrow_right"}};
 
 // ================[ END OF CODE ]================
 }  // namespace cmspk::term

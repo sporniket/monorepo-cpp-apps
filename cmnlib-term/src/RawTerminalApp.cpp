@@ -21,6 +21,8 @@ RawTerminalApp::RawTerminalApp(RawTerminalAppOptions options) : options(options)
 
     struct termios raw = origTermios;
     cfmakeraw(&raw);
+    raw.c_cc[VMIN] = 0;   // required to catch "ESCAPE" key
+    raw.c_cc[VTIME] = 1;  // required to catch "ESCAPE" key
 
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
         die("tcsetattr");

@@ -35,11 +35,13 @@ class AsciiCharSourceFromStdRead : public cmspk::io::BasicDataSource<char8_t, ch
         }
         int result = readImpl(fileDescriptorId, &c, 1);
         int savedErrno = errno;
-        if (result == -1) {
+        if (result < 0) {
             if (savedErrno != EAGAIN && savedErrno != EWOULDBLOCK) {
                 irrecoverable = true;
                 return std::unexpected(AsciiCharSourceFromStdRead::irrecoverable_error());
             }
+            return std::unexpected(AsciiCharSourceFromStdRead::not_ready_error());
+        } else if (result == 0) {
             return std::unexpected(AsciiCharSourceFromStdRead::not_ready_error());
         }
         return c;
@@ -95,8 +97,24 @@ void notifyQuit() { isRunning = false; }
 void onUnknownVtInput(cmspk::term::VtInputUnknown vtin) {
     char8_t rawValue = vtin.rawValue;
     std::cout << "Unknown \t(" << (uint16_t)rawValue << ")" << cmspk::term::ASCII_RAW_ENDL;
-    if (rawValue == (char8_t)'q') {
+}
+
+void onCharVtInput(char8_t vtin) {
+    if (vtin >= 32 && vtin < 128) {
+        std::cout << "Printable :\t" << (uint16_t)vtin << " ('" << (char)vtin << "') " << cmspk::term::ASCII_RAW_ENDL;
+    } else {
+        std::cout << "Printable :\t" << (uint16_t)vtin << cmspk::term::ASCII_RAW_ENDL;
+    }
+    if (vtin == (char8_t)'q') {
         notifyQuit();
+    }
+}
+
+void onKeyVtInput(cmspk::term::VtInputKey vtin) {
+    if (cmspk::term::vt_input_key_names_ascii.contains(vtin)) {
+        std::cout << "Key :\t" << (const char*)cmspk::term::vt_input_key_names_ascii.at(vtin).c_str() << cmspk::term::ASCII_RAW_ENDL;
+    } else {
+        std::cout << "Unamed key :\t" << (uint16_t)vtin << cmspk::term::ASCII_RAW_ENDL;
     }
 }
 
@@ -108,6 +126,10 @@ int main() {
             cmspk::term::VtInput in = (*nextInput);
             if (std::holds_alternative<cmspk::term::VtInputUnknown>(in)) {
                 onUnknownVtInput(std::get<cmspk::term::VtInputUnknown>(in));
+            } else if (std::holds_alternative<char8_t>(in)) {
+                onCharVtInput(std::get<char8_t>(in));
+            } else if (std::holds_alternative<cmspk::term::VtInputKey>(in)) {
+                onKeyVtInput(std::get<cmspk::term::VtInputKey>(in));
             }
         } else {
             cmspk::io::IoErrorAscii error = nextInput.error();
