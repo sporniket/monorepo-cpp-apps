@@ -90,6 +90,48 @@ __then__ reading the next VtInput returns and end of file error.
 
 <hr>
 
+### VtInputSource, should_process_multi_octets_values__keys_and_cursor_position_report ###
+
+__given__ a character data source that will return a mixed list of multi-octets sequences, including keys and cursor position report
+
+__given__ the VtInputSource under test is plugged to that character data source.
+
+__when__ reading the next VtInput with `next()` as many time as the expected number of received input.
+
+__then__ each time the VtInputSource will return a `std::variant` containing the expected `VtInputKey` or `VtInputReport`.
+
+__then__ reading the next VtInput returns and end of file error.
+
+<hr>
+
+### VtInputSource, should_fall_back_to_single_octet_processing_when_multi_octet_sequence_is_broken_or_unknown ###
+
+__given__ a character data source that will return a mixed list of broken and unknown multi-octets sequences
+
+__given__ the VtInputSource under test is plugged to that character data source.
+
+__when__ reading the next VtInput with `next()` as many time as the expected number of received input.
+
+__then__ each time the VtInputSource will return a `std::variant` containing the expected `char8_t` or `VtInputKey`.
+
+__then__ reading the next VtInput returns and end of file error.
+
+<hr>
+
+### VtInputSource, should_fall_back_to_single_octet_processing_when_multi_octet_sequence_is_interrupted_by_lack_of_data ###
+
+__given__ a character data source that will return a starting sequence interrupted before its end
+
+__given__ the VtInputSource under test is plugged to that character data source.
+
+__when__ reading the next VtInput with `next()` as many time as the expected number of received input.
+
+__then__ each time the VtInputSource will return a `std::variant` containing the expected `char8_t` or `VtInputKey`.
+
+__then__ reading the next VtInput returns and end of file error.
+
+<hr>
+
 > _END extracted from `TestRunner--VtInputSource.cpp`_
 
 ************************************************/
