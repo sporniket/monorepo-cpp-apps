@@ -14,8 +14,9 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 message(">> export compile command is ${CMAKE_EXPORT_COMPILE_COMMANDS}")
 
-# NOT PRESENT YET : test suites.
-# add_subdirectory(src-tests)
+# The test suite is implemented in a dedicated source folder.
+add_subdirectory(src-tests)
+
 # NOT PRESENT YET : demos.
 # add_subdirectory(src-demos)
 

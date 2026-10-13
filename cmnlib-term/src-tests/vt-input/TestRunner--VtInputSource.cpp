@@ -20,113 +20,23 @@
 // project
 #include <string>
 
-// TO BE MOVED
-
+#include "cmspk/io/DataSourceMock.hpp"
 #include "cmspk/term/VtInputSource.hpp"
 
 // ================[ BEGIN common code ]==================
-template <class T, class CharT>
-class DataSourceMock : public cmspk::io::BasicDataSource<T, CharT> {
-  public:
-    DataSourceMock(std::vector<T> values) {
-        sequence.reserve(values.size());
-        for (T v : values) {
-            sequence.push_back(v);
-        }
-        cursor = this->sequence.begin();
-    }
-    DataSourceMock(std::vector<std::variant<T, cmspk::io::BasicIoError<CharT>>> sequence) : sequence(sequence) { cursor = this->sequence.begin(); }
-    virtual std::expected<T, cmspk::io::BasicIoError<CharT>> next() {
-        if (!hasNext()) {
-            return std::unexpected(cmspk::io::BasicIoError<CharT>{.type = cmspk::io::IoErrorType::END_OF_DATA, .message = {}, .details = {}});
-        }
-        std::variant<T, cmspk::io::BasicIoError<CharT>> result = *cursor;
-        ++cursor;
-        if (std::holds_alternative<cmspk::io::BasicIoError<CharT>>(result)) {
-            return std::unexpected(std::get<cmspk::io::BasicIoError<CharT>>(result));
-        }
-        return std::get<T>(result);
-    }
-    virtual bool hasNext() { return cursor != sequence.end(); }
 
-    virtual ~DataSourceMock() {}
-    /**
-     * Copy operation (rule of 5).
-     */
-    DataSourceMock(const DataSourceMock&) = default;
-
-    /**
-     * Copy operator (rule of 5).
-     */
-    DataSourceMock& operator=(const DataSourceMock&) = default;
-
-    /**
-     * Move operation (rule of 5).
-     */
-    DataSourceMock(DataSourceMock&&) = default;
-
-    /**
-     * Move operator (rule of 5).
-     */
-    DataSourceMock& operator=(DataSourceMock&&) = default;
-
-  private:
-    std::vector<std::variant<T, cmspk::io::BasicIoError<CharT>>> sequence;
-    std::vector<std::variant<T, cmspk::io::BasicIoError<CharT>>>::iterator cursor;
-};
-
-// TO BE MOVED
 // ================[ END common code ]==================
 
 // ================[ BEGIN test suite ]==================
 // Parameterized tests are a hassle, see it later
-Test(DataSourceMock, can_be_created_from_a_sequence_containing_only_values) {
-    std::vector<char8_t> toBeTested{0, 28, 29, 30, 31};
-    std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>> source(new DataSourceMock<char8_t, char8_t>(toBeTested));
-    for (char8_t c : toBeTested) {
-        std::expected<char8_t, cmspk::io::IoErrorAscii> nextChar = source->next();
-        if (nextChar) {
-            cr_assert((*nextChar) == c, "expected nextChar to be %d, got %d", (uint16_t)c, (uint16_t)(*nextChar));
-        } else {
-            cr_assert_fail("should not reach here, expected %d, got error message %s", (uint16_t)c, (const char*)(nextChar.error().message.c_str()));
-        }
-    }
-    std::expected<char8_t, cmspk::io::IoErrorAscii> nextChar = source->next();
-    cr_assert(not(nextChar), "should return an error");
-    cr_assert(cmspk::io::IoErrorType::END_OF_DATA == nextChar.error().type);
-}
-
-Test(DataSourceMock, can_be_created_from_a_sequence_containing_a_mix_of_values_and_errors) {
-    std::vector<std::variant<char8_t, cmspk::io::BasicIoError<char8_t>>> toBeTested{
-        (char8_t)0,  (char8_t)28,
-        (char8_t)29, cmspk::io::BasicIoError<char8_t>({.type = cmspk::io::IoErrorType::NOT_READY, .message = u8"not.ready", .details = {}}),
-        (char8_t)30, (char8_t)31};
-    std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>> source(new DataSourceMock<char8_t, char8_t>(toBeTested));
-    uint16_t count = 0;
-    for (std::variant<char8_t, cmspk::io::BasicIoError<char8_t>> c : toBeTested) {
-        count++;
-        std::expected<char8_t, cmspk::io::BasicIoError<char8_t>> nextChar = source->next();
-        if (std::holds_alternative<char8_t>(c)) {
-            cr_assert(nextChar, "expected nextChar to be expected at pos %d", count);
-            cr_assert((*nextChar) == std::get<char8_t>(c), "expected nextChar to be %d, got %d", (uint16_t)std::get<char8_t>(c), (uint16_t)(*nextChar));
-        } else {
-            cr_assert(not(nextChar), "expected nextChar to be unexpected at pos %d", count);
-            cr_assert(nextChar.error().type == std::get<cmspk::io::BasicIoError<char8_t>>(c).type, "expected nextChar.error().type to be %d, got %d",
-                      (uint16_t)std::get<cmspk::io::BasicIoError<char8_t>>(c).type, nextChar.error().type);
-        }
-    }
-    std::expected<char8_t, cmspk::io::IoErrorAscii> nextChar = source->next();
-    cr_assert(not(nextChar), "should return an error");
-    cr_assert(cmspk::io::IoErrorType::END_OF_DATA == nextChar.error().type);
-}
-
 Test(VtInputSource, should_process_single_octet_values__unknown_values) {
     /// > This is the fall-back behaviour. The list [28,29,30,31] is what remains unknown when all other behaviours have been implemented.
     /// __given__ a character data source that will return the sequence : `[28,29,30,31]`.
     std::vector<char8_t> toBeTested{28, 29, 30, 31};
 
     /// __given__ the VtInputSource under test is plugged to that character data source.
-    cmspk::term::VtInputSource source(std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new DataSourceMock<char8_t, char8_t>(toBeTested)));
+    cmspk::term::VtInputSource source(
+        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::DataSourceMock<char8_t, char8_t>(toBeTested)));
 
     for (char8_t c : toBeTested) {
         /// __when__ reading the next VtInput with `next()` as many time as the length of the sequence.
@@ -153,7 +63,8 @@ Test(VtInputSource, should_process_single_octet_values__printable_characters_and
     std::vector<char8_t> toBeTested{0, 1, 2, 3, 4, 5, 26, 32, 65, 66, 13};  // a sample of known inputs
 
     /// __given__ the VtInputSource under test is plugged to that character data source.
-    cmspk::term::VtInputSource source(std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new DataSourceMock<char8_t, char8_t>(toBeTested)));
+    cmspk::term::VtInputSource source(
+        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::DataSourceMock<char8_t, char8_t>(toBeTested)));
 
     uint16_t count = 0;
     std::vector<cmspk::term::VtInput> toBeExpected{cmspk::term::VtInputKey::ctrl_space,
@@ -199,7 +110,8 @@ Test(VtInputSource, should_process_multi_octets_values__keys_and_cursor_position
     std::vector<char8_t> toBeTested{27, 91, 65, 27, 91, 66, 27, 91, 0x36, 0x32, 59, 0x32, 0x30, 82};
 
     /// __given__ the VtInputSource under test is plugged to that character data source.
-    cmspk::term::VtInputSource source(std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new DataSourceMock<char8_t, char8_t>(toBeTested)));
+    cmspk::term::VtInputSource source(
+        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::DataSourceMock<char8_t, char8_t>(toBeTested)));
 
     uint16_t count = 0;
     std::vector<cmspk::term::VtInput> toBeExpected{cmspk::term::VtInputKey::arrow_up, cmspk::term::VtInputKey::arrow_down,
@@ -244,7 +156,8 @@ Test(VtInputSource, should_fall_back_to_single_octet_processing_when_multi_octet
     std::vector<char8_t> toBeTested{27, 91, 97, 27, 91, 27, 91, 66};
 
     /// __given__ the VtInputSource under test is plugged to that character data source.
-    cmspk::term::VtInputSource source(std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new DataSourceMock<char8_t, char8_t>(toBeTested)));
+    cmspk::term::VtInputSource source(
+        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::DataSourceMock<char8_t, char8_t>(toBeTested)));
 
     /// __when__ reading the next VtInput with `next()` as many time as the expected number of received input.
     uint16_t count = 0;
@@ -279,7 +192,7 @@ Test(VtInputSource, should_fall_back_to_single_octet_processing_when_multi_octet
     std::vector<std::variant<char8_t, cmspk::io::IoErrorAscii>> toBeTested{
         (char8_t)27,
         (char8_t)91,
-        cmspk::io::BasicIoError{.type = cmspk::io::IoErrorType::NOT_READY, .message = (std::basic_string<char8_t>)u8"not.ready", .details = {}},
+        cmspk::io::BasicIoError{.type = cmspk::io::IoErrorType::NOT_READY, .message = cmspk::io::convertUsAsciiString<char8_t>(u8"not.ready"), .details = {}},
         (char8_t)65,
         (char8_t)27,
         (char8_t)91,
@@ -287,7 +200,8 @@ Test(VtInputSource, should_fall_back_to_single_octet_processing_when_multi_octet
         (char8_t)0x32};
 
     /// __given__ the VtInputSource under test is plugged to that character data source.
-    cmspk::term::VtInputSource source(std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new DataSourceMock<char8_t, char8_t>(toBeTested)));
+    cmspk::term::VtInputSource source(
+        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::DataSourceMock<char8_t, char8_t>(toBeTested)));
 
     /// __when__ reading the next VtInput with `next()` as many time as the expected number of received input.
     uint16_t count = 0;

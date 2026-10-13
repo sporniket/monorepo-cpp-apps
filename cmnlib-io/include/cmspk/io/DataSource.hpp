@@ -10,6 +10,7 @@
 
 // required
 #include <expected>
+
 #include "cmspk/io/IoError.hpp"
 
 namespace cmspk::io {
@@ -18,7 +19,7 @@ namespace cmspk::io {
  * Generic model of an interface to model a source of arbitrary type.
  *
  * @param T the type returned by a successfull read.
- * @param CharT type of character, e.g. `char8_t`, `char32_t`.
+ * @param CharT type of character to be used for errors, e.g. `char8_t`, `char32_t`.
  */
 template <class T, class CharT>
 class BasicDataSource {

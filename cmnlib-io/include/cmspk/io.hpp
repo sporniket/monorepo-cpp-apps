@@ -25,7 +25,5 @@ namespace cmspk {};  // namespace cmspk
  */
 namespace cmspk::io {};
 
-#include "cmspk/io/IoError.hpp"
-
 // ================[ END OF CODE ]================
 #endif

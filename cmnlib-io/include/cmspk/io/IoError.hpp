@@ -57,6 +57,31 @@ using IoErrorAscii = BasicIoError<char8_t>;
  */
 using IoError = BasicIoError<char32_t>;
 
+// TODO -- move into its own lib
+/**
+ * Create a string from a string containing only US-ASCII characters.
+ *
+ * Only printable US-ASCII characters are copied, non US-ASCII characters and non printable characters are replaced by '?' (ascii code 63).
+ *
+ * ## Behaviour
+ *
+ * > See `TestRunner--convertUsAsciiString.cpp`
+ *
+ * @param CharT the target character type.
+ * @param source the us-ascii string to convert.
+ */
+template <class CharT>
+std::basic_string<CharT> convertUsAsciiString(const std::basic_string<char8_t>& source) {
+    CharT questionMark[2]{63, 0};
+    std::basic_string<CharT> recipient;
+    recipient.reserve(source.size());
+    for (char8_t c : source) {
+        CharT toAppend[2]{c, 0};
+        recipient.append(((((uint8_t)c) < 127) && (((uint8_t)c) >= 32)) ? toAppend : questionMark);
+    }
+
+    return recipient;
+}
 // ================[ END OF CODE ]================
 }  // namespace cmspk::io
 #endif
