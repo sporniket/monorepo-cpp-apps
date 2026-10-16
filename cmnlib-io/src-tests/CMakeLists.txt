@@ -10,6 +10,7 @@ find_library(LIBCRITERION criterion REQUIRED)
 
 # each module has its own folder
 add_subdirectory(data-source)
+add_subdirectory(io-error)
 
 # ---
 # Create the custom task `verify` that MUST be invoked to run this test suite.
@@ -18,5 +19,6 @@ add_custom_target(
     verify
     DEPENDS
     verify--data-source
+    verify--io-error
 )
 
