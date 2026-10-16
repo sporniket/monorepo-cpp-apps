@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "cmspk/io/DataSource.hpp"
-#include "cmspk/io/IoError.hpp"
 
 namespace cmspk::io {
 // ================[ CODE BEGINS ]================

@@ -30,6 +30,29 @@ add_test(NAME DoTest--data-source-mock--list COMMAND ${CMAKE_CURRENT_BINARY_DIR}
 add_test(NAME DoTest--data-source-mock--run COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_DATA_SOURCE_MOCK} --color=always)
 
 # ---
+# test--data-source-from-file
+# ---
+
+# Define how to build the test suite
+set(BINARY_DATA_SOURCE_FROM_FILE test--data-source-from-file)
+
+# registers your cpp files from ../src
+# e.g. : set(SOURCES TestRunner.cpp ../src/whatever.cpp)
+set(SOURCES_DATA_SOURCE_FROM_FILE TestRunner--DataSourceFromFile.cpp)
+
+add_executable(${BINARY_DATA_SOURCE_FROM_FILE} ${SOURCES_DATA_SOURCE_FROM_FILE})
+target_include_directories(${BINARY_DATA_SOURCE_FROM_FILE} PUBLIC
+    ../../include
+)
+
+target_link_libraries(${BINARY_DATA_SOURCE_FROM_FILE} PRIVATE criterion)
+
+# ---
+# Specify how to launch the test suite, and how to check that it pass
+add_test(NAME DoTest--data-source-from-file--list COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_DATA_SOURCE_FROM_FILE} --list --color=always)
+add_test(NAME DoTest--data-source-from-file--run COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_DATA_SOURCE_FROM_FILE} --color=always)
+
+# ---
 # [your next test runner here]
 # ---
 
@@ -41,4 +64,5 @@ add_custom_target(
     verify--data-source COMMAND env CLICOLOR_FORCE=1 ${CMAKE_CTEST_COMMAND} --verbose
     DEPENDS
     ${BINARY_DATA_SOURCE_MOCK}
+    ${BINARY_DATA_SOURCE_FROM_FILE}
 )

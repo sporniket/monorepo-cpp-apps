@@ -8,6 +8,7 @@
 #ifndef __CMSPK__IO__IO_ERROR_HPP__
 #define __CMSPK__IO__IO_ERROR_HPP__
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
