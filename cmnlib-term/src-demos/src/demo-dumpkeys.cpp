@@ -15,69 +15,15 @@
 // other includes
 #include "cmspk/term/RawTerminalApp.hpp"
 #include "cmspk/term/VtInputSource.hpp"
+#include "cmspk/io/DataSourceFromFile.hpp"
+
+using AsciiCharSourceFromFile = cmspk::io::BasicDataSourceFromFile<char8_t, char8_t>;
 
 // By virtue of the RAII pattern and static storage,
 // the terminal raw mode will be enabled before entering `main()`
 static cmspk::term::RawTerminalApp app({.clearScreenPolicyOnStartup = cmspk::term::ClearScreenPolicy::DO_NOTHING,
                                         .clearScreenPolicyOnShutdown = cmspk::term::ClearScreenPolicy::CLEAR_SCREEN});
 
-// BEGIN To be moved -- encapsulate read into DataSource
-#include <functional>
-
-#include "cmspk/io/DataSource.hpp"
-class AsciiCharSourceFromStdRead : public cmspk::io::BasicDataSource<char8_t, char8_t> {
-  public:
-    AsciiCharSourceFromStdRead(int fileDescriptorId, std::function<ssize_t(int, void*, size_t)> readImpl = read)
-        : fileDescriptorId(fileDescriptorId), readImpl(readImpl) {}
-    virtual std::expected<char8_t, cmspk::io::IoErrorAscii> next() {
-        if (irrecoverable) {
-            return std::unexpected(AsciiCharSourceFromStdRead::irrecoverable_error());
-        }
-        int result = readImpl(fileDescriptorId, &c, 1);
-        int savedErrno = errno;
-        if (result < 0) {
-            if (savedErrno != EAGAIN && savedErrno != EWOULDBLOCK) {
-                irrecoverable = true;
-                return std::unexpected(AsciiCharSourceFromStdRead::irrecoverable_error());
-            }
-            return std::unexpected(AsciiCharSourceFromStdRead::not_ready_error());
-        } else if (result == 0) {
-            return std::unexpected(AsciiCharSourceFromStdRead::not_ready_error());
-        }
-        return c;
-    }
-    virtual bool hasNext() { return !irrecoverable; }
-
-    virtual ~AsciiCharSourceFromStdRead() {}
-    /**
-     * Copy operation (rule of 5).
-     */
-    AsciiCharSourceFromStdRead(const AsciiCharSourceFromStdRead&) = default;
-
-    /**
-     * Copy operator (rule of 5).
-     */
-    AsciiCharSourceFromStdRead& operator=(const AsciiCharSourceFromStdRead&) = default;
-
-    /**
-     * Move operation (rule of 5).
-     */
-    AsciiCharSourceFromStdRead(AsciiCharSourceFromStdRead&&) = default;
-
-    /**
-     * Move operator (rule of 5).
-     */
-    AsciiCharSourceFromStdRead& operator=(AsciiCharSourceFromStdRead&&) = default;
-
-  private:
-    int fileDescriptorId;
-    char8_t c;
-    bool irrecoverable = false;
-    std::function<ssize_t(int, void*, size_t)> readImpl;
-    static const cmspk::io::IoErrorAscii irrecoverable_error() { return {.type = cmspk::io::IoErrorType::BAD, .message = u8"bad.state", .details = {}}; }
-    static const cmspk::io::IoErrorAscii not_ready_error() { return {.type = cmspk::io::IoErrorType::NOT_READY, .message = u8"try.later", .details = {}}; }
-};
-// END To be moved
 
 bool isPrintable(char c) {
     if (iscntrl(c)) {
@@ -119,7 +65,7 @@ void onKeyVtInput(cmspk::term::VtInputKey vtin) {
 }
 
 int main() {
-    cmspk::term::VtInputSource source(std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new AsciiCharSourceFromStdRead(STDIN_FILENO)));
+    cmspk::term::VtInputSource source(std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new AsciiCharSourceFromFile(STDIN_FILENO)));
     while (isRunning) {
         std::expected<cmspk::term::VtInput, cmspk::io::IoErrorAscii> nextInput = source.next();
         if (nextInput) {
