@@ -24,10 +24,10 @@
 
 // ================[ BEGIN test suite ]==================
 // Parameterized tests are a hassle, see it later
-Test(DataSourceMock, can_be_created_from_a_sequence_containing_only_values) {
+Test(BasicDataSourceMock, can_be_created_from_a_sequence_containing_only_values) {
     /// __given__ the mocked data source is given a sequence of values.
     std::vector<char8_t> toBeTested{0, 28, 29, 30, 31};
-    std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>> source(new cmspk::io::DataSourceMock<char8_t, char8_t>(toBeTested));
+    std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>> source(new cmspk::io::BasicDataSourceMock<char8_t, char8_t>(toBeTested));
 
     /// __when__ calling next() the same number of time as the number of values of the given sequence
     for (char8_t c : toBeTested) {
@@ -47,13 +47,13 @@ Test(DataSourceMock, can_be_created_from_a_sequence_containing_only_values) {
     cr_assert(cmspk::io::IoErrorType::END_OF_DATA == nextChar.error().type);
 }
 
-Test(DataSourceMock, can_be_created_from_a_sequence_containing_a_mix_of_values_and_errors) {
+Test(BasicDataSourceMock, can_be_created_from_a_sequence_containing_a_mix_of_values_and_errors) {
     /// __given__ the mocked data source is given a mixed sequence of values and errors.
     std::vector<std::variant<char8_t, cmspk::io::BasicIoError<char8_t>>> toBeTested{
         (char8_t)0,  (char8_t)28,
         (char8_t)29, cmspk::io::BasicIoError<char8_t>({.type = cmspk::io::IoErrorType::NOT_READY, .message = u8"not.ready", .details = {}}),
         (char8_t)30, (char8_t)31};
-    std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>> source(new cmspk::io::DataSourceMock<char8_t, char8_t>(toBeTested));
+    std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>> source(new cmspk::io::BasicDataSourceMock<char8_t, char8_t>(toBeTested));
 
     /// __when__ calling next() the same number of time as the number of items of the given sequence
     uint16_t count = 0;

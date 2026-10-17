@@ -32,14 +32,14 @@ namespace cmspk::io {
  * @param CharT type of character to be used for errors, e.g. `char8_t`, `char32_t`.
  */
 template <class T, class CharT>
-class DataSourceMock : public cmspk::io::BasicDataSource<T, CharT> {
+class BasicDataSourceMock : public cmspk::io::BasicDataSource<T, CharT> {
   public:
     /**
      * Create a mock data source that will return all expected value until the end of the sequence.
      *
      * @param values the list of values to replay.
      **/
-    DataSourceMock(std::vector<T> values) {
+    BasicDataSourceMock(std::vector<T> values) {
         sequence.reserve(values.size());
         for (T v : values) {
             sequence.push_back(v);
@@ -51,7 +51,7 @@ class DataSourceMock : public cmspk::io::BasicDataSource<T, CharT> {
      *
      * @param sequence the sequence of event to replay.
      */
-    DataSourceMock(std::vector<std::variant<T, cmspk::io::BasicIoError<CharT>>> sequence) : sequence(sequence) { cursor = this->sequence.begin(); }
+    BasicDataSourceMock(std::vector<std::variant<T, cmspk::io::BasicIoError<CharT>>> sequence) : sequence(sequence) { cursor = this->sequence.begin(); }
     virtual std::expected<T, cmspk::io::BasicIoError<CharT>> next() {
         if (!hasNext()) {
             return std::unexpected(cmspk::io::BasicIoError<CharT>{.type = cmspk::io::IoErrorType::END_OF_DATA, .message = {}, .details = {}});
@@ -65,26 +65,26 @@ class DataSourceMock : public cmspk::io::BasicDataSource<T, CharT> {
     }
     virtual bool hasNext() { return cursor != sequence.end(); }
 
-    virtual ~DataSourceMock() {}
+    virtual ~BasicDataSourceMock() {}
     /**
      * Copy operation (rule of 5).
      */
-    DataSourceMock(const DataSourceMock&) = default;
+    BasicDataSourceMock(const BasicDataSourceMock&) = default;
 
     /**
      * Copy operator (rule of 5).
      */
-    DataSourceMock& operator=(const DataSourceMock&) = default;
+    BasicDataSourceMock& operator=(const BasicDataSourceMock&) = default;
 
     /**
      * Move operation (rule of 5).
      */
-    DataSourceMock(DataSourceMock&&) = default;
+    BasicDataSourceMock(BasicDataSourceMock&&) = default;
 
     /**
      * Move operator (rule of 5).
      */
-    DataSourceMock& operator=(DataSourceMock&&) = default;
+    BasicDataSourceMock& operator=(BasicDataSourceMock&&) = default;
 
   private:
     std::vector<std::variant<T, cmspk::io::BasicIoError<CharT>>> sequence;

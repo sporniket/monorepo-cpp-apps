@@ -72,7 +72,7 @@ using IoError = BasicIoError<char32_t>;
  * @param source the us-ascii string to convert.
  */
 template <class CharT>
-std::basic_string<CharT> convertUsAsciiString(const std::basic_string<char8_t>& source) {
+constexpr std::basic_string<CharT> convertUsAsciiString(const std::basic_string<char8_t>& source) {
     CharT questionMark[2]{63, 0};
     std::basic_string<CharT> recipient;
     recipient.reserve(source.size());

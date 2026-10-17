@@ -37,7 +37,7 @@ struct SpyReport {
     int fileDescriptorId;
     size_t readLength;
 };
-Test(DataSourceFromFile, should_call_the_provided_read_function) {
+Test(BasicDataSourceFromFile, should_call_the_provided_read_function) {
     /// __given__ the data source from file is given a dummy file descriptor and a spying read function
     SpyReport report{};
     auto spyRead = [&report](int fd, void* buffer, size_t length) mutable noexcept -> size_t {
@@ -48,7 +48,7 @@ Test(DataSourceFromFile, should_call_the_provided_read_function) {
         cBuffer[0]=data[0];
         return 1;
     } ;
-    std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>> source(new cmspk::io::DataSourceFromFile<char8_t, char8_t>(42, spyRead));
+    std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>> source(new cmspk::io::BasicDataSourceFromFile<char8_t, char8_t>(42, spyRead));
 
     /// __when__ calling next()
     std::expected<char8_t, cmspk::io::BasicIoError<char8_t>> nextChar = source->next();

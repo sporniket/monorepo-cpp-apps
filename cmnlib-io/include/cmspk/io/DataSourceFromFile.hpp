@@ -19,69 +19,79 @@
 namespace cmspk::io {
 // ================[ CODE BEGINS ]================
 /**
- * Encapsulate a C file to read data.
+ * Generic model of C file encapsulation to read data.
  *
  *
  * @param T the type returned by a successfull read.
  * @param CharT type of character to be used for errors, e.g. `char8_t`, `char32_t`.
  */
 template <class T, class CharT>
-class DataSourceFromFile : public cmspk::io::BasicDataSource<T, CharT> {
+class BasicDataSourceFromFile : public cmspk::io::BasicDataSource<T, CharT> {
   public:
-    DataSourceFromFile(int fileDescriptorId, std::function<size_t(int, void*, size_t)> readImpl = read)
+    BasicDataSourceFromFile(int fileDescriptorId, std::function<size_t(int, void*, size_t)> readImpl = read)
         : fileDescriptorId(fileDescriptorId), readImpl(readImpl) {}
     virtual std::expected<char8_t, cmspk::io::BasicIoError<CharT>> next() {
         if (irrecoverable) {
-            return std::unexpected(DataSourceFromFile::irrecoverable_error());
+            return std::unexpected(BasicDataSourceFromFile::irrecoverable_error());
         }
         int result = readImpl(fileDescriptorId, &c, sizeof(T));
         int savedErrno = errno;
         if (result < 0) {
             if (savedErrno != EAGAIN && savedErrno != EWOULDBLOCK) {
                 irrecoverable = true;
-                return std::unexpected(DataSourceFromFile::irrecoverable_error());
+                return std::unexpected(BasicDataSourceFromFile::irrecoverable_error());
             }
-            return std::unexpected(DataSourceFromFile::not_ready_error());
+            return std::unexpected(BasicDataSourceFromFile::not_ready_error());
         } else if (result == 0) {
-            return std::unexpected(DataSourceFromFile::not_ready_error());
+            return std::unexpected(BasicDataSourceFromFile::not_ready_error());
         }
         return c;
     }
     virtual bool hasNext() { return !irrecoverable; }
 
-    virtual ~DataSourceFromFile() {}
+    virtual ~BasicDataSourceFromFile() {}
     /**
      * Copy operation (rule of 5).
      */
-    DataSourceFromFile(const DataSourceFromFile&) = default;
+    BasicDataSourceFromFile(const BasicDataSourceFromFile&) = default;
 
     /**
      * Copy operator (rule of 5).
      */
-    DataSourceFromFile& operator=(const DataSourceFromFile&) = default;
+    BasicDataSourceFromFile& operator=(const BasicDataSourceFromFile&) = default;
 
     /**
      * Move operation (rule of 5).
      */
-    DataSourceFromFile(DataSourceFromFile&&) = default;
+    BasicDataSourceFromFile(BasicDataSourceFromFile&&) = default;
 
     /**
      * Move operator (rule of 5).
      */
-    DataSourceFromFile& operator=(DataSourceFromFile&&) = default;
+    BasicDataSourceFromFile& operator=(BasicDataSourceFromFile&&) = default;
 
   private:
     int fileDescriptorId;
     T c;
     bool irrecoverable = false;
     std::function<ssize_t(int, void*, size_t)> readImpl;
+    static constexpr std::basic_string<CharT> message_bad_state = convertUsAsciiString<CharT>(u8"bad.state");
+    static constexpr std::basic_string<CharT> message_not_ready = convertUsAsciiString<CharT>(u8"try.later");
     static const cmspk::io::BasicIoError<CharT> irrecoverable_error() {
-        return {.type = cmspk::io::IoErrorType::BAD, .message = convertUsAsciiString<CharT>(u8"bad.state"), .details = {}};
+        return {.type = cmspk::io::IoErrorType::BAD, .message = message_bad_state, .details = {}};
     }
     static const cmspk::io::BasicIoError<CharT> not_ready_error() {
-        return {.type = cmspk::io::IoErrorType::NOT_READY, .message = convertUsAsciiString<CharT>(u8"try.later"), .details = {}};
+        return {.type = cmspk::io::IoErrorType::NOT_READY, .message = message_not_ready, .details = {}};
     }
 };
+
+/**
+ * An interface to encapsulate a C file to read data.
+ *
+ * @param T the type returned by a successfull read.
+ */
+template<class T>
+using DataSourceFromFile = BasicDataSourceFromFile<T, char32_t>;
 
 // ================[ END OF CODE ]================
 }  // namespace cmspk::io

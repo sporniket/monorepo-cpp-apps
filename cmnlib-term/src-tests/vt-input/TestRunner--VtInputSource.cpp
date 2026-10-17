@@ -36,7 +36,7 @@ Test(VtInputSource, should_process_single_octet_values__unknown_values) {
 
     /// __given__ the VtInputSource under test is plugged to that character data source.
     cmspk::term::VtInputSource source(
-        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::DataSourceMock<char8_t, char8_t>(toBeTested)));
+        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::BasicDataSourceMock<char8_t, char8_t>(toBeTested)));
 
     for (char8_t c : toBeTested) {
         /// __when__ reading the next VtInput with `next()` as many time as the length of the sequence.
@@ -64,7 +64,7 @@ Test(VtInputSource, should_process_single_octet_values__printable_characters_and
 
     /// __given__ the VtInputSource under test is plugged to that character data source.
     cmspk::term::VtInputSource source(
-        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::DataSourceMock<char8_t, char8_t>(toBeTested)));
+        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::BasicDataSourceMock<char8_t, char8_t>(toBeTested)));
 
     uint16_t count = 0;
     std::vector<cmspk::term::VtInput> toBeExpected{cmspk::term::VtInputKey::ctrl_space,
@@ -111,7 +111,7 @@ Test(VtInputSource, should_process_multi_octets_values__keys_and_cursor_position
 
     /// __given__ the VtInputSource under test is plugged to that character data source.
     cmspk::term::VtInputSource source(
-        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::DataSourceMock<char8_t, char8_t>(toBeTested)));
+        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::BasicDataSourceMock<char8_t, char8_t>(toBeTested)));
 
     uint16_t count = 0;
     std::vector<cmspk::term::VtInput> toBeExpected{cmspk::term::VtInputKey::arrow_up, cmspk::term::VtInputKey::arrow_down,
@@ -157,7 +157,7 @@ Test(VtInputSource, should_fall_back_to_single_octet_processing_when_multi_octet
 
     /// __given__ the VtInputSource under test is plugged to that character data source.
     cmspk::term::VtInputSource source(
-        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::DataSourceMock<char8_t, char8_t>(toBeTested)));
+        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::BasicDataSourceMock<char8_t, char8_t>(toBeTested)));
 
     /// __when__ reading the next VtInput with `next()` as many time as the expected number of received input.
     uint16_t count = 0;
@@ -201,7 +201,7 @@ Test(VtInputSource, should_fall_back_to_single_octet_processing_when_multi_octet
 
     /// __given__ the VtInputSource under test is plugged to that character data source.
     cmspk::term::VtInputSource source(
-        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::DataSourceMock<char8_t, char8_t>(toBeTested)));
+        std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new cmspk::io::BasicDataSourceMock<char8_t, char8_t>(toBeTested)));
 
     /// __when__ reading the next VtInput with `next()` as many time as the expected number of received input.
     uint16_t count = 0;
