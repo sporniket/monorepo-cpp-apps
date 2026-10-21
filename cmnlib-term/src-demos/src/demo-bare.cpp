@@ -1,9 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 David SPORN
 // ---
-// This is a minimal demo of how to use cmspk::term::RawTerminalApp, its
-// lifecycle and its emergency app termination `die(message)`.
+// This program demonstrates the use of :
+//
+// * cmspk::term::RawTerminalApp
 // ---
+// User manual
+// ---
+// This demo show what to expect with regards standard output and the
+// application termination using `die(message)`.
+// ---
+// @since v0.0.1
 
 // standard includes
 #include <iostream>

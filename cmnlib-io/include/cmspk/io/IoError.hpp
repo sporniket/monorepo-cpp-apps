@@ -16,6 +16,8 @@ namespace cmspk::io {
 // ================[ CODE BEGINS ]================
 /**
  * Qualifier of the kind of I/O error.
+ *
+ * @since v0.0.1
  */
 enum class IoErrorType {
     /**
@@ -40,6 +42,7 @@ enum class IoErrorType {
  * Also, the message and additional details could be represented as US-ASCII strings or Unicode strings.
  *
  * @param CharT the type to use as character, e.g. `char8_t`, `char32_t`.
+ * @since v0.0.1
  */
 template <class CharT>
 struct BasicIoError {
@@ -50,11 +53,13 @@ struct BasicIoError {
 
 /**
  * I/O error to use when using US-ASCII strings.
+ * @since v0.0.1
  */
 using IoErrorAscii = BasicIoError<char8_t>;
 
 /**
  * I/O error to use when using Unicode strings.
+ * @since v0.0.1
  */
 using IoError = BasicIoError<char32_t>;
 
@@ -70,6 +75,7 @@ using IoError = BasicIoError<char32_t>;
  *
  * @param CharT the target character type.
  * @param source the us-ascii string to convert.
+ * @since v0.0.2
  */
 template <class CharT>
 constexpr std::basic_string<CharT> convertUsAsciiString(const std::basic_string<char8_t>& source) {

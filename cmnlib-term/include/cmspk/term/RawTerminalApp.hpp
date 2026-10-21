@@ -17,15 +17,18 @@ namespace cmspk::term {
 // ================[ CODE BEGINS ]================
 /**
  * Unicode string representing a CR+LF line end.
+ * @since v0.0.1
  */
 const std::u32string RAW_ENDL(U"\r\n");
 /**
  * US-ASCII string representing a CR+LF line end, to be used instead of std::endl.
+ * @since v0.0.1
  */
 const std::string ASCII_RAW_ENDL("\r\n");
 
 /**
  * Express whether the terminal screen should be cleared or not as some point.
+ * @since v0.0.1
  */
 enum ClearScreenPolicy {
     /**
@@ -40,6 +43,7 @@ enum ClearScreenPolicy {
 
 /**
  * Configuration structure for `RawTerminalApp`.
+ * @since v0.0.1
  */
 struct RawTerminalAppOptions {
     /**
@@ -84,6 +88,7 @@ int main(int argc, char* argv[]) {
     }
 }
 ```
+@since v0.0.1
 ************************************************/
 class RawTerminalApp {
   public:

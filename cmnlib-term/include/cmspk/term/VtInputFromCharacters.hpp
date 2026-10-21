@@ -24,6 +24,7 @@ namespace cmspk::term {
 // Enums of errors
 /**
  * Identifiable causes of error.
+ * @since v0.0.2
  */
 enum class VtInputFromCharactersError { CANNOT_ACCEPT_ANY_NEW_CHARACTER };
 
@@ -38,6 +39,7 @@ enum class VtInputFromCharactersError { CANNOT_ACCEPT_ANY_NEW_CHARACTER };
  * command:= one_of('A'..'Z','~'); // to expand
  * message:= append('\x1b[',optional_of(@number(),optional_of(';', @number())), @command());
  * ```
+ * @since v0.0.2
  */
 enum class VtInputSequenceParserState {
     /**
@@ -70,6 +72,7 @@ enum class VtInputSequenceParserState {
  * Parser context to match a VT input sequence.
  *
  * A general form of VT input sequence is `'\x1b['+[number + [';' + number]]+command`.
+ * @since v0.0.2
  */
 struct VtInputSequenceParserContext {
     static constexpr size_t max_number_size = 5;
@@ -422,6 +425,7 @@ __then__ VtInputFromCharacters does not have data
 
 > _END extracted from `TestRunner--VtInputFromCharacters.cpp`_
 
+@since v0.0.2
 ************************************************/
 class VtInputFromCharacters {
   public:

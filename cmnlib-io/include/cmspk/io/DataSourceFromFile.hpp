@@ -24,6 +24,7 @@ namespace cmspk::io {
  *
  * @param T the type returned by a successfull read.
  * @param CharT type of character to be used for errors, e.g. `char8_t`, `char32_t`.
+ * @since v0.0.2
  */
 template <class T, class CharT>
 class BasicDataSourceFromFile : public cmspk::io::BasicDataSource<T, CharT> {
@@ -89,6 +90,7 @@ class BasicDataSourceFromFile : public cmspk::io::BasicDataSource<T, CharT> {
  * An interface to encapsulate a C file to read data.
  *
  * @param T the type returned by a successfull read.
+ * @since v0.0.2
  */
 template<class T>
 using DataSourceFromFile = BasicDataSourceFromFile<T, char32_t>;

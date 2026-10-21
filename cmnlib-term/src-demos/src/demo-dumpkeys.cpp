@@ -4,8 +4,8 @@
 // This program demonstrates the use of :
 //
 // * cmspk::term::RawTerminalApp
-// * cmspk::term::VtInputSource
-// * cmspk::io::BasicDataSourceFromFile
+// * __since v0.0.2__ cmspk::term::VtInputSource
+// * __since v0.0.2__ cmspk::io::BasicDataSourceFromFile
 //
 // ---
 // User Manual
@@ -21,6 +21,7 @@
 // * 'q' (lower case, case sensitive) will quit
 // * ctrl+'l' will emit a cursor location query to receive a cursor position report that will be printed (row and column).
 // ---
+// @since v0.0.1
 
 // standard includes
 #include <unistd.h>

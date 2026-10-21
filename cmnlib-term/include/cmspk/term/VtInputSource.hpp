@@ -134,6 +134,7 @@ __then__ reading the next VtInput returns and end of file error.
 
 > _END extracted from `TestRunner--VtInputSource.cpp`_
 
+@since v0.0.2
 ************************************************/
 class VtInputSource : public cmspk::io::BasicDataSource<cmspk::term::VtInput, char8_t> {
   public:

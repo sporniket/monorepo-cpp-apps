@@ -20,6 +20,7 @@ namespace cmspk::term {
 An unprocessable input, like zero or any characters in the range 28 to 32.
 
 A VtInputUnknown contains the actual value, and will usually be ignored.
+@since v0.0.2
 ************************************************/
 struct VtInputUnknown {
     char8_t rawValue;
@@ -35,6 +36,7 @@ their single octet representation in Vt.
 * By "design", any sequence of more than 1 octet mapped to a key **will** have a 32-bits value with the higher 16-bits value being the introducting character
 sequence (e.g. the CSI `escape+'['`), in other words, a CSI introduced key will have a value in the range `0x1b5b0000~0x1b5bffff`. **The actual values of the
 constants are subject to change at any time**
+@since v0.0.2
 ************************************************/
 enum class VtInputKey {
     ctrl_space = 0,
@@ -76,6 +78,7 @@ enum class VtInputKey {
 
 /************************************************
 Model of a Vt cursor position report.
+@since v0.0.2
 ************************************************/
 struct VtInputCursorPositionReport {
     /**
@@ -89,6 +92,7 @@ struct VtInputCursorPositionReport {
 };
 /************************************************
 Model of a Vt report, like the cursor position.
+@since v0.0.2
 ************************************************/
 using VtInputReport = std::variant<VtInputCursorPositionReport>;
 
@@ -102,11 +106,13 @@ It can be :
 <li>or a _printable character_ (either a single-octet printable character, or the first octet of a multi-octets character, depending of the character
 set encoding) ;</li> <li>or none of the formers, i.e. an _unknown_ input, and as such will be ignored ;</li>
 </ul>
+@since v0.0.2
 ************************************************/
 using VtInput = std::variant<VtInputReport, VtInputKey, char8_t, VtInputUnknown>;
 
 /************************************************
 Registry of known multi-char sequences mapped to a VtInputKey.
+@since v0.0.2
 ************************************************/
 const std::map<std::basic_string<char8_t>, VtInputKey> known_multi_char_key_sequences{
     {u8"\x1b[A", VtInputKey::arrow_up},
@@ -117,6 +123,7 @@ const std::map<std::basic_string<char8_t>, VtInputKey> known_multi_char_key_sequ
 
 /************************************************
 Registry of VtInputKey names, us-ascii version, should be useless in C++26 with reflection.
+@since v0.0.2
 ************************************************/
 static const std::map<VtInputKey, std::basic_string<char8_t>> vt_input_key_names_ascii{
     {VtInputKey::ctrl_space, u8"ctrl_space"},  {VtInputKey::ctrl_a, u8"ctrl_a"},
@@ -139,6 +146,7 @@ static const std::map<VtInputKey, std::basic_string<char8_t>> vt_input_key_names
 
 /************************************************
 Registry of VtInputKey names, should be useless in C++26 with reflection.
+@since v0.0.2
 ************************************************/
 static const std::map<VtInputKey, std::basic_string<char32_t>> vt_input_key_names{
     {VtInputKey::ctrl_space, U"ctrl_space"},  {VtInputKey::ctrl_a, U"ctrl_a"},

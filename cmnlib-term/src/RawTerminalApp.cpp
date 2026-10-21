@@ -4,6 +4,8 @@
 // This is part of **term library by sporniket**.
 // A collection of utilities for writing terminal-hosted applications.
 // ---
+// @since v0.0.1
+
 #include "cmspk/term/RawTerminalApp.hpp"
 
 #include <termios.h>
