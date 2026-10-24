@@ -11,8 +11,7 @@ target_include_directories(demo-bare PUBLIC ../include)
 
 # --- demo-dumpkeys ---
 add_executable(demo-dumpkeys src/demo-dumpkeys.cpp ../src/RawTerminalApp.cpp)
-target_include_directories(demo-dumpkeys PUBLIC 
+target_include_directories(demo-dumpkeys PUBLIC
 	../include
 	../../cmnlib-io/include
 )
-
