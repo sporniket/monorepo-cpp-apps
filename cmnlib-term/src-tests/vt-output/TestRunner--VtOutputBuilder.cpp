@@ -26,10 +26,8 @@
 // Parameterized tests are a hassle, see it later
 Test(BasicVtOutputBuilder, should_be_usable_fluently) {
     /// __when__ using a builder in a fluent way, __then__ it create the output.
-    cr_assert(*(cmspk::term::BasicVtOutputBuilder<char8_t>::create()
-        ->append(u8"created on the fly, ")
-        ->append(u8"the builder won't be reused")
-        ->build()) == u8"created on the fly, the builder won't be reused");
+    cr_assert(*(cmspk::term::BasicVtOutputBuilder<char8_t>::create()->append(u8"created on the fly, ")->append(u8"the builder won't be reused")->build()) ==
+              u8"created on the fly, the builder won't be reused");
 }
 
 Test(BasicVtOutputBuilder, should_be_usable_multiple_times) {
@@ -37,10 +35,7 @@ Test(BasicVtOutputBuilder, should_be_usable_multiple_times) {
     std::unique_ptr<cmspk::term::BasicVtOutputBuilder<char8_t>> builder = cmspk::term::BasicVtOutputBuilder<char8_t>::create();
 
     /// __when__ an output has already been built
-    cr_assert(*(builder
-        ->append(u8"first sequence")
-        ->append(u8" built on never used builder")
-        ->build()) == u8"first sequence built on never used builder");
+    cr_assert(*(builder->append(u8"first sequence")->append(u8" built on never used builder")->build()) == u8"first sequence built on never used builder");
 
     /// __then__ it is possible to reuse the builder to build another output.
     cr_assert(*(builder->append(u8"Another sequence")->build()) == u8"Another sequence");
@@ -51,10 +46,7 @@ Test(BasicVtOutputBuilder__append, should_append_given_text_to_the_result) {
     std::unique_ptr<cmspk::term::BasicVtOutputBuilder<char8_t>> builder = cmspk::term::BasicVtOutputBuilder<char8_t>::create();
 
     /// __when__ calling `append()` with various texts
-    builder
-        ->append(u8"hello ")
-        ->append(u8"world ")
-        ->append(u8"!");
+    builder->append(u8"hello ")->append(u8"world ")->append(u8"!");
 
     /// __then__ the result is the concatenation of all those texts
     std::unique_ptr<std::basic_string<char8_t>> result = builder->build();
@@ -71,7 +63,7 @@ Test(BasicVtOutputBuilder__queryCursorPosition, should_append_command_n_6_to_the
     /// __then__ it appends the sequence `ESC + '[6n'`
     std::unique_ptr<std::basic_string<char8_t>> result = builder->build();
     cr_assert(result->size() == 4);
-    cr_assert(result->at(0) == 27, "expected 27, got %d", (uint16_t) result->at(0));
+    cr_assert(result->at(0) == 27, "expected 27, got %d", (uint16_t)result->at(0));
     cr_assert((*result) == u8"\x1b[6n");
 }
 

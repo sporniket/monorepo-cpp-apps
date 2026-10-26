@@ -30,9 +30,9 @@
 #include <string>
 
 // other includes
+#include "cmspk/io/DataSourceFromFile.hpp"
 #include "cmspk/term/RawTerminalApp.hpp"
 #include "cmspk/term/VtInputSource.hpp"
-#include "cmspk/io/DataSourceFromFile.hpp"
 
 using AsciiCharSourceFromFile = cmspk::io::BasicDataSourceFromFile<char8_t, char8_t>;
 
@@ -41,35 +41,33 @@ using AsciiCharSourceFromFile = cmspk::io::BasicDataSourceFromFile<char8_t, char
 static cmspk::term::RawTerminalApp app({.clearScreenPolicyOnStartup = cmspk::term::ClearScreenPolicy::DO_NOTHING,
                                         .clearScreenPolicyOnShutdown = cmspk::term::ClearScreenPolicy::CLEAR_SCREEN});
 
-
 // BEGIN To be moved -- VtOut
 
 // TODO -- complete VtOut : setCursorPosition, setColors(std::optional<VtColor666> front, std::optional<VtColor666> back),...
 
-struct VtOutReportSingle { // TODO: from DataSinkReport
-	size_t countWritten; //how much data was written
-	std::optional<cmspk::io::IoErrorAscii> error; //if present, an error interrupted.
+struct VtOutReportSingle {                         // TODO: from DataSinkReport
+    size_t countWritten;                           // how much data was written
+    std::optional<cmspk::io::IoErrorAscii> error;  // if present, an error interrupted.
 };
 /*
 struct VtOutReportBatch { // TODO: from DataSinkReport
-	size_t countItemWritten; //how much item of the list was written
-	VtOutReportSingle lastItemReport;
+    size_t countItemWritten; //how much item of the list was written
+    VtOutReportSingle lastItemReport;
 };
 */
-class VtOut { // TODO: implements DataSink<T, CharT>
+class VtOut {  // TODO: implements DataSink<T, CharT>
   public:
     VtOutReportSingle push(const std::basic_string<char8_t>& data) {
-		// OVERRIDE DataSink<T, CharT>.push(const T& data)
-		size_t report = write(STDOUT_FILENO, data.c_str(), data.size());
-		// TODO : May report be <0 for error ?
+        // OVERRIDE DataSink<T, CharT>.push(const T& data)
+        size_t report = write(STDOUT_FILENO, data.c_str(), data.size());
+        // TODO : May report be <0 for error ?
         if (report < data.size()) {
             return {.countWritten = report, .error = {/*TODO*/}};
         } else {
             return {.countWritten = report, .error = std::nullopt};
         }
-	};
+    };
     VtOutReportSingle queryCursorPosition() { return push(u8"\x1b[6n"); };
-
 };
 
 // END To be moved
@@ -88,7 +86,7 @@ bool isPrintable(char c) {
 static bool isRunning = true;  // crude state machine
 
 // TODO static VtOut vtOut
-static VtOut vtOut ;
+static VtOut vtOut;
 
 void notifyQuit() { isRunning = false; }
 
@@ -115,16 +113,16 @@ void onKeyVtInput(cmspk::term::VtInputKey vtin) {
         std::cout << "Unamed key :\t" << (uint16_t)vtin << cmspk::term::ASCII_RAW_ENDL;
     }
     if (vtin == cmspk::term::VtInputKey::ctrl_l) {
-		std::cout << "Query cursor position...";
-		vtOut.queryCursorPosition();
-		std::cout << cmspk::term::ASCII_RAW_ENDL;
-	}
+        std::cout << "Query cursor position...";
+        vtOut.queryCursorPosition();
+        std::cout << cmspk::term::ASCII_RAW_ENDL;
+    }
 }
 
 void onReportInput(cmspk::term::VtInputReport vtin) {
-	if (!std::holds_alternative<cmspk::term::VtInputCursorPositionReport>(vtin)) return; // unsupported, ignore
-	cmspk::term::VtInputCursorPositionReport report = std::get<cmspk::term::VtInputCursorPositionReport>(vtin);
-	std::cout << "Cursor position report: \tRow = " << report.row << "\tCol = " << report.col << cmspk::term::ASCII_RAW_ENDL;
+    if (!std::holds_alternative<cmspk::term::VtInputCursorPositionReport>(vtin)) return;  // unsupported, ignore
+    cmspk::term::VtInputCursorPositionReport report = std::get<cmspk::term::VtInputCursorPositionReport>(vtin);
+    std::cout << "Cursor position report: \tRow = " << report.row << "\tCol = " << report.col << cmspk::term::ASCII_RAW_ENDL;
 }
 
 int main() {
@@ -140,8 +138,8 @@ int main() {
             } else if (std::holds_alternative<cmspk::term::VtInputKey>(in)) {
                 onKeyVtInput(std::get<cmspk::term::VtInputKey>(in));
             } else if (std::holds_alternative<cmspk::term::VtInputReport>(in)) {
-				onReportInput(std::get<cmspk::term::VtInputReport>(in));
-			}
+                onReportInput(std::get<cmspk::term::VtInputReport>(in));
+            }
         } else {
             cmspk::io::IoErrorAscii error = nextInput.error();
             if (error.type != cmspk::io::IoErrorType::NOT_READY) {

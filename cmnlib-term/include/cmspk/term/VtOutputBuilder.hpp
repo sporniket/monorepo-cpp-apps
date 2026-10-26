@@ -14,7 +14,7 @@
 #include <string>
 
 // project
-#include "cmspk/io/IoError.hpp" // -- required for cmspk::io::convertUsAsciiAndControlString
+#include "cmspk/io/IoError.hpp"  // -- required for cmspk::io::convertUsAsciiAndControlString
 
 namespace cmspk::term {
 // ================[ CODE BEGINS ]================
@@ -30,26 +30,49 @@ namespace cmspk::term {
  *
  * @since v0.0.3
  */
-template<class CharT>
+template <class CharT>
 class BasicVtOutputBuilder {
-    public:
-    static std::unique_ptr<BasicVtOutputBuilder> create() noexcept {return std::make_unique<BasicVtOutputBuilder<CharT>>();}
-    BasicVtOutputBuilder<CharT>* append(const std::basic_string<CharT>& text) noexcept { if(!buffer) recycle(); buffer->append(text); return this; };
+  public:
+    static std::unique_ptr<BasicVtOutputBuilder> create() noexcept { return std::make_unique<BasicVtOutputBuilder<CharT>>(); }
+    BasicVtOutputBuilder<CharT>* append(const std::basic_string<CharT>& text) noexcept {
+        if (!buffer) recycle();
+        buffer->append(text);
+        return this;
+    };
 
-    BasicVtOutputBuilder<CharT>* queryCursorPosition() noexcept { if(!buffer) recycle(); buffer->append(sequence_query_cursor_position); return this; };
-    BasicVtOutputBuilder<CharT>* clearScreen() noexcept {if(!buffer) recycle(); buffer->append(sequence_clear_screen); return this;}
-    BasicVtOutputBuilder<CharT>* goHome() noexcept {if(!buffer) recycle(); buffer->append(sequence_go_home); return this;}
-    BasicVtOutputBuilder<CharT>* goNextLine() noexcept {if(!buffer) recycle(); buffer->append(sequence_go_next_line); return this;}
-    std::unique_ptr<std::basic_string<CharT>> build() noexcept {if(!buffer) recycle(); return std::move(buffer) ;}
+    BasicVtOutputBuilder<CharT>* queryCursorPosition() noexcept {
+        if (!buffer) recycle();
+        buffer->append(sequence_query_cursor_position);
+        return this;
+    };
+    BasicVtOutputBuilder<CharT>* clearScreen() noexcept {
+        if (!buffer) recycle();
+        buffer->append(sequence_clear_screen);
+        return this;
+    }
+    BasicVtOutputBuilder<CharT>* goHome() noexcept {
+        if (!buffer) recycle();
+        buffer->append(sequence_go_home);
+        return this;
+    }
+    BasicVtOutputBuilder<CharT>* goNextLine() noexcept {
+        if (!buffer) recycle();
+        buffer->append(sequence_go_next_line);
+        return this;
+    }
+    std::unique_ptr<std::basic_string<CharT>> build() noexcept {
+        if (!buffer) recycle();
+        return std::move(buffer);
+    }
 
-    private:
-    std::unique_ptr<std::basic_string<CharT>> buffer = std::make_unique<std::basic_string<CharT>>() ;
+  private:
+    std::unique_ptr<std::basic_string<CharT>> buffer = std::make_unique<std::basic_string<CharT>>();
     static constexpr std::basic_string<CharT> sequence_query_cursor_position = cmspk::io::convertUsAsciiAndControlString<CharT>(u8"\x1b[6n");
     static constexpr std::basic_string<CharT> sequence_clear_screen = cmspk::io::convertUsAsciiAndControlString<CharT>(u8"\x1b[2J");
     static constexpr std::basic_string<CharT> sequence_go_home = cmspk::io::convertUsAsciiAndControlString<CharT>(u8"\x1b[H");
     static constexpr std::basic_string<CharT> sequence_go_next_line = cmspk::io::convertUsAsciiAndControlString<CharT>(u8"\r\n");
 
-    void recycle() {buffer = std::make_unique<std::basic_string<CharT>>();}
+    void recycle() { buffer = std::make_unique<std::basic_string<CharT>>(); }
 };
 
 // ================[ END OF CODE ]================
