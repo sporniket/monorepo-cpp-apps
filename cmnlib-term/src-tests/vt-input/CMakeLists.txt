@@ -50,16 +50,16 @@ target_include_directories(${BINARY_VT_INPUT_SOURCE} PUBLIC
 target_link_libraries(${BINARY_VT_INPUT_SOURCE} PRIVATE criterion)
 
 # ---
+# Specify how to launch the test suite, and how to check that it pass
+add_test(NAME DoTest--vt-input-source--list COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_VT_INPUT_SOURCE} --list --color=always)
+add_test(NAME DoTest--vt-input-source--run COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_VT_INPUT_SOURCE} --color=always)
+
+# ---
 # Create the custom task `verify--xxx` that MUST be invoked to run this test suite.
 # i.e. `cmake --build <build_dir> -- verify--xxx`
 add_custom_target(
     verify--vt-input COMMAND env CLICOLOR_FORCE=1 ${CMAKE_CTEST_COMMAND} --verbose
-    DEPENDS 
+    DEPENDS
     ${BINARY_VT_INPUT_FROM_CHARACTERS}
     ${BINARY_VT_INPUT_SOURCE}
 )
-
-# ---
-# Specify how to launch the test suite, and how to check that it pass
-add_test(NAME DoTest--vt-input-source--list COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_VT_INPUT_SOURCE} --list --color=always)
-add_test(NAME DoTest--vt-input-source--run COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_VT_INPUT_SOURCE} --color=always)

@@ -79,12 +79,34 @@ using IoError = BasicIoError<char32_t>;
  */
 template <class CharT>
 constexpr std::basic_string<CharT> convertUsAsciiString(const std::basic_string<char8_t>& source) {
-    CharT questionMark[2]{63, 0};
     std::basic_string<CharT> recipient;
     recipient.reserve(source.size());
     for (char8_t c : source) {
-        CharT toAppend[2]{c, 0};
-        recipient.append(((((uint8_t)c) < 127) && (((uint8_t)c) >= 32)) ? toAppend : questionMark);
+        recipient.push_back(((((uint8_t)c) < 127) && (((uint8_t)c) >= 32)) ? c : 63);
+    }
+
+    return recipient;
+}
+
+/**
+ * Create a string from a string containing only US-ASCII and serial control (range(0,32)) characters.
+ *
+ * Non US-ASCII characters are replaced by '?' (ascii code 63).
+ *
+ * ## Behaviour
+ *
+ * > See `TestRunner--convertUsAsciiString.cpp`
+ *
+ * @param CharT the target character type.
+ * @param source the us-ascii string to convert.
+ * @since v0.0.2
+ */
+template <class CharT>
+constexpr std::basic_string<CharT> convertUsAsciiAndControlString(const std::basic_string<char8_t>& source) {
+    std::basic_string<CharT> recipient;
+    recipient.reserve(source.size());
+    for (char8_t c : source) {
+        recipient.push_back(((((uint8_t)c) < 127)) ? c : 63);
     }
 
     return recipient;
