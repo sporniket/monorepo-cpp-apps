@@ -23,6 +23,7 @@
 // other includes
 #include "cmspk/term/RawTerminalApp.hpp"
 #include "cmspk/term/VtInputSource.hpp"
+#include "cmspk/term/VtOutputBuilder.hpp"
 #include "cmspk/io/DataSourceFromFile.hpp"
 
 using AsciiCharSourceFromFile = cmspk::io::BasicDataSourceFromFile<char8_t, char8_t>;
@@ -59,10 +60,6 @@ class VtOut { // TODO: implements DataSink<T, CharT>
             return {.countWritten = report, .error = std::nullopt};
         }
 	};
-    VtOutReportSingle queryCursorPosition() { return push(u8"\x1b[6n"); };
-    VtOutReportSingle clearScreen() {return push(u8"\x1b[2J");}
-    VtOutReportSingle putCursorHome() {return push(u8"\x1b[H");}
-    VtOutReportSingle putCursorNextLine() {return push(u8"\n\r");}
 
 };
 
@@ -149,6 +146,7 @@ static bool needRedraw = false ; // crude state machine
 
 // TODO static VtOut vtOut
 static VtOut vtOut ;
+static std::unique_ptr<cmspk::term::BasicVtOutputBuilder<char8_t>> vtOutBuilder = cmspk::term::BasicVtOutputBuilder<char8_t>::create();
 
 void notifyQuit() { isRunning = false; }
 
@@ -177,7 +175,10 @@ void onReportInput(cmspk::term::VtInputReport vtin) {
 
 void render() {
     // TODO
-    vtOut.putCursorHome();
+    vtOut.push(*(vtOutBuilder
+        ->goHome()
+        ->build())
+    );
 
     // ---
     // render edit area
@@ -185,7 +186,7 @@ void render() {
     bool isFirstLine = true;
     for(TextLineBody line:theDocument.lines) {
         if(!isFirstLine) {
-            vtOut.putCursorNextLine();
+            vtOutBuilder->goNextLine();
         } else {
             isFirstLine = false;
         }
@@ -193,47 +194,57 @@ void render() {
             if (index >= theDocument.buffer.size()) continue;
             BasicTextShard<char8_t> shard = theDocument.buffer.at(index);
             if(shard.rendered) {
-                vtOut.push(*(shard.rendered));
+                vtOutBuilder->append(*(shard.rendered));
             } else {
-                vtOut.push(shard.raw);
+                vtOutBuilder->append(shard.raw);
             }
         }
     }
+    vtOut.push(*(vtOutBuilder->build()));
 
     // ---
     // render "after text" area
     // ---
     for(uint8_t i = 0 ; i < 10 ; i++) {
-        vtOut.putCursorNextLine();
-        vtOut.push(u8"~");
+        vtOutBuilder
+        ->goNextLine()
+        ->append(u8"~");
     }
+    vtOut.push(*(vtOutBuilder->build()));
 
     // ---
     // render document status
     // ---
-    vtOut.putCursorNextLine();
-    vtOut.push(u8"===(unsaved note 01)===0 chars============(col,row):001,001===");
+    vtOutBuilder
+        ->goNextLine()
+        ->append(u8"===(unsaved note 01)===0 chars=======================(col,row):001,001===");
+    vtOut.push(*(vtOutBuilder->build()));
 
     // ---
     // render application panel
     // ---
-    vtOut.putCursorNextLine();
-    vtOut.push(u8"---EDIT MODE---                                    (ESC for command mode)");
-    vtOut.putCursorNextLine();
-    vtOut.push(u8"   Ct-Q : quit   --    Ct-S : save    --    Ct-O : load");
-    vtOut.putCursorNextLine();
-    vtOut.push(u8"   Ct-X : cut    --    Ct-C : copy    --    Ct-V : paste");
-    vtOut.putCursorNextLine();
-    vtOut.push(u8"   Ct-Z : undo   -- Ct-Sh-Z : redo    -- Ct-Sh-R : reload");
-    vtOut.putCursorNextLine();
-    vtOut.push(u8"   Ct-F : find   --    Ct-H : replace --      F1 : help");
+    vtOutBuilder
+        ->goNextLine()
+        ->append(u8"---EDIT MODE---                                    (ESC for command mode)")
+        ->goNextLine()
+        ->append(u8"   Ct-Q : quit   --    Ct-S : save    --    Ct-O : load")
+        ->goNextLine()
+        ->append(u8"   Ct-X : cut    --    Ct-C : copy    --    Ct-V : paste")
+        ->goNextLine()
+        ->append(u8"   Ct-Z : undo   -- Ct-Sh-Z : redo    -- Ct-Sh-R : reload")
+        ->goNextLine()
+        ->append(u8"   Ct-F : find   --    Ct-H : replace --      F1 : help");
+    vtOut.push(*(vtOutBuilder->build()));
 
     // TODO put cursor at edition point
 }
 
 void init() {
     theDocument.init(); // FIXME change code so that it is not mandatory (otherwise, theDocument.put() fails catastrophically
-    vtOut.clearScreen();
+    vtOut.push(*(vtOutBuilder
+        ->clearScreen()
+        ->build())
+    );
     render() ;
 }
 
