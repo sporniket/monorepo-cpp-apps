@@ -29,13 +29,13 @@ namespace cmspk::io {
 template <class T, class CharT>
 class BasicDataSourceFromFile : public cmspk::io::BasicDataSource<T, CharT> {
   public:
-    BasicDataSourceFromFile(int fileDescriptorId, std::function<size_t(int, void*, size_t)> readImpl = read)
+    BasicDataSourceFromFile(int fileDescriptorId, std::function<ssize_t(int, void*, size_t)> readImpl = read)
         : fileDescriptorId(fileDescriptorId), readImpl(readImpl) {}
     virtual std::expected<char8_t, cmspk::io::BasicIoError<CharT>> next() {
         if (irrecoverable) {
             return std::unexpected(BasicDataSourceFromFile::irrecoverable_error());
         }
-        int result = readImpl(fileDescriptorId, &c, sizeof(T));
+        ssize_t result = readImpl(fileDescriptorId, &c, sizeof(T));
         int savedErrno = errno;
         if (result < 0) {
             if (savedErrno != EAGAIN && savedErrno != EWOULDBLOCK) {
@@ -92,7 +92,7 @@ class BasicDataSourceFromFile : public cmspk::io::BasicDataSource<T, CharT> {
  * @param T the type returned by a successfull read.
  * @since v0.0.2
  */
-template<class T>
+template <class T>
 using DataSourceFromFile = BasicDataSourceFromFile<T, char32_t>;
 
 // ================[ END OF CODE ]================
