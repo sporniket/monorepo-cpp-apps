@@ -9,24 +9,61 @@
 #define __CMSPK__IO__DATA_SINK_HPP__
 
 // required
-#include <expected>
+#include <optional>
 
 #include "cmspk/io/IoError.hpp"
 
 namespace cmspk::io {
 // ================[ CODE BEGINS ]================
 /**
+ * A BasicDataSink will always return a report.
+ *
+ * @param CharT type of character to be used for errors, e.g. `char8_t`, `char32_t`.
+ *
+ * @since v0.0.3
+ */
+template<class CharT>
+struct BasicDataSinkReport {
+    /**
+     * The number of data successfully pushed in the sink.
+     */
+    size_t countItem ;
+
+    /**
+     * Usually countItem * sizeof(T) for fixed size
+     */
+    size_t countSize ;
+
+    /**
+     * The error that interrupted the operation.
+     */
+    std::optional<cmspk::io::BasicIoError<CharT>> error;
+};
+
+/**
  * Generic model of an interface to model a sink for an arbitrary type.
  *
  * @param T the type to be consumed.
  * @param CharT type of character to be used for errors, e.g. `char8_t`, `char32_t`.
+ *
+ * @since v0.0.3
  */
 template <class T, class CharT>
 class BasicDataSink {
   public:
     BasicDataSink() = default;
-    virtual std::expected<T, BasicIoError<CharT>> next() = 0;
-    virtual bool hasNext() { return true; }  // override to avoid a read expected to fail
+
+    /**
+     * Push data into the sink (single operation).
+     *
+     * @param value the single value to push.
+     */
+    virtual BasicDataSinkReport<CharT> push(const T& value) = 0;
+
+    /**
+     * Assertion to avoid a push expected to fail.
+     */
+    virtual bool canPush() { return true; }
 
     virtual ~BasicDataSink() = default;
     /**
