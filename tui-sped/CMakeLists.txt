@@ -28,7 +28,7 @@ target_include_directories(sped PUBLIC
 # Collect files for clang-format/clang-tidy tasks
 file(GLOB_RECURSE FORMATTABLE_SOURCES
        ${PROJECT_SOURCE_DIR}/include/*.hpp
-       ${PROJECT_SOURCE_DIR}/src/*.cpp
+       ${PROJECT_SOURCE_DIR}/src-main/*.cpp
        ${PROJECT_SOURCE_DIR}/src-tests/*.cpp
 )
 

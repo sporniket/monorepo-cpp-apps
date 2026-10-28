@@ -21,10 +21,11 @@
 #include <string>
 
 // other includes
+#include "cmspk/io/DataSourceFromFile.hpp"
+#include "cmspk/io/StringSinkToFile.hpp"
 #include "cmspk/term/RawTerminalApp.hpp"
 #include "cmspk/term/VtInputSource.hpp"
 #include "cmspk/term/VtOutputBuilder.hpp"
-#include "cmspk/io/DataSourceFromFile.hpp"
 
 using AsciiCharSourceFromFile = cmspk::io::BasicDataSourceFromFile<char8_t, char8_t>;
 
@@ -33,37 +34,8 @@ using AsciiCharSourceFromFile = cmspk::io::BasicDataSourceFromFile<char8_t, char
 static cmspk::term::RawTerminalApp app({.clearScreenPolicyOnStartup = cmspk::term::ClearScreenPolicy::DO_NOTHING,
                                         .clearScreenPolicyOnShutdown = cmspk::term::ClearScreenPolicy::CLEAR_SCREEN});
 
-
-// BEGIN To be moved -- VtOut
-
-// TODO -- complete VtOut : setCursorPosition, setColors(std::optional<VtColor666> front, std::optional<VtColor666> back),...
-
-struct VtOutReportSingle { // TODO: from DataSinkReport
-	size_t countWritten; //how much data was written
-	std::optional<cmspk::io::IoErrorAscii> error; //if present, an error interrupted.
-};
-/*
-struct VtOutReportBatch { // TODO: from DataSinkReport
-	size_t countItemWritten; //how much item of the list was written
-	VtOutReportSingle lastItemReport;
-};
-*/
-class VtOut { // TODO: implements DataSink<T, CharT>
-  public:
-    VtOutReportSingle push(const std::basic_string<char8_t>& data) {
-		// OVERRIDE DataSink<T, CharT>.push(const T& data)
-		size_t report = write(STDOUT_FILENO, data.c_str(), data.size());
-		// TODO : May report be <0 for error ?
-        if (report < data.size()) {
-            return {.countWritten = report, .error = {/*TODO*/}};
-        } else {
-            return {.countWritten = report, .error = std::nullopt};
-        }
-	};
-
-};
-
-// END To be moved
+static std::unique_ptr<cmspk::term::BasicVtOutputBuilder<char8_t>> vtOutBuilder = cmspk::term::BasicVtOutputBuilder<char8_t>::create();
+static cmspk::io::BasicStringSinkToFile<char8_t> vtOut(STDOUT_FILENO);
 
 // =====================================================================
 // Editor data struct
@@ -87,13 +59,12 @@ enum class TextShardType {
  * <li>number of rendered characters per raw characters</li>
  * </ol>
  */
-template<class CharT>
+template <class CharT>
 struct BasicTextShard {
-
     /**
      * The actual content of the shard.
      */
-    std::basic_string<CharT> raw ;
+    std::basic_string<CharT> raw;
 
     /**
      * If present, the text to display, if absent, display the raw text directly.
@@ -104,7 +75,7 @@ struct BasicTextShard {
 /**
  * The editor's text buffer is a collection of text shards.
  */
-template<class CharT>
+template <class CharT>
 using BasicTextBuffer = std::vector<BasicTextShard<CharT>>;
 
 /**
@@ -112,7 +83,7 @@ using BasicTextBuffer = std::vector<BasicTextShard<CharT>>;
  */
 using TextLineBody = std::vector<size_t>;
 
-template<class CharT>
+template <class CharT>
 struct BasicTextDocument {
     BasicTextBuffer<CharT> buffer;
     std::vector<TextLineBody> lines;
@@ -126,9 +97,9 @@ struct BasicTextDocument {
 
     void put(CharT c) {
         // FIXME protect against empty document, return std::expected<void, TextDocumentError>
-        TextLineBody& line = lines.back(); //ASSUME cursor at the last line
-        size_t index = line.back(); // ASSUME cursor at the last shard of the line
-        BasicTextShard<CharT>& shard = buffer.at(index) ;
+        TextLineBody& line = lines.back();  // ASSUME cursor at the last line
+        size_t index = line.back();         // ASSUME cursor at the last shard of the line
+        BasicTextShard<CharT>& shard = buffer.at(index);
         // ASSUME cursor at the end of the shard
         shard.raw.push_back(c);
     }
@@ -138,25 +109,21 @@ struct BasicTextDocument {
 // RUNTIME
 // ------------
 using Document = BasicTextDocument<char8_t>;
-static Document theDocument ;
+static Document theDocument;
 // =====================================================================
 
-static bool isRunning = true;  // crude state machine
-static bool needRedraw = false ; // crude state machine
-
-// TODO static VtOut vtOut
-static VtOut vtOut ;
-static std::unique_ptr<cmspk::term::BasicVtOutputBuilder<char8_t>> vtOutBuilder = cmspk::term::BasicVtOutputBuilder<char8_t>::create();
+static bool isRunning = true;    // crude state machine
+static bool needRedraw = false;  // crude state machine
 
 void notifyQuit() { isRunning = false; }
 
-void notifyRender() {needRedraw = true; }
+void notifyRender() { needRedraw = true; }
 
-void notifyDoneRender() {needRedraw = false; }
+void notifyDoneRender() { needRedraw = false; }
 
 void onCharVtInput(char8_t vtin) {
     if (vtin >= 32 && vtin < 128) {
-        theDocument.put(vtin) ;
+        theDocument.put(vtin);
         notifyRender();
     }
 }
@@ -164,36 +131,33 @@ void onCharVtInput(char8_t vtin) {
 void onKeyVtInput(cmspk::term::VtInputKey vtin) {
     if (vtin == cmspk::term::VtInputKey::ctrl_q) {
         notifyQuit();
-	}
+    }
 }
 
 void onReportInput(cmspk::term::VtInputReport vtin) {
-	if (!std::holds_alternative<cmspk::term::VtInputCursorPositionReport>(vtin)) return; // unsupported, ignore
-	cmspk::term::VtInputCursorPositionReport report = std::get<cmspk::term::VtInputCursorPositionReport>(vtin);
-	std::cout << "Cursor position report: \tRow = " << report.row << "\tCol = " << report.col << cmspk::term::ASCII_RAW_ENDL;
+    if (!std::holds_alternative<cmspk::term::VtInputCursorPositionReport>(vtin)) return;  // unsupported, ignore
+    cmspk::term::VtInputCursorPositionReport report = std::get<cmspk::term::VtInputCursorPositionReport>(vtin);
+    std::cout << "Cursor position report: \tRow = " << report.row << "\tCol = " << report.col << cmspk::term::ASCII_RAW_ENDL;
 }
 
 void render() {
     // TODO
-    vtOut.push(*(vtOutBuilder
-        ->goHome()
-        ->build())
-    );
+    vtOut.push(*(vtOutBuilder->goHome()->build()));
 
     // ---
     // render edit area
     // ---
     bool isFirstLine = true;
-    for(TextLineBody line:theDocument.lines) {
-        if(!isFirstLine) {
+    for (TextLineBody line : theDocument.lines) {
+        if (!isFirstLine) {
             vtOutBuilder->goNextLine();
         } else {
             isFirstLine = false;
         }
-        for(size_t index:line) {
+        for (size_t index : line) {
             if (index >= theDocument.buffer.size()) continue;
             BasicTextShard<char8_t> shard = theDocument.buffer.at(index);
-            if(shard.rendered) {
+            if (shard.rendered) {
                 vtOutBuilder->append(*(shard.rendered));
             } else {
                 vtOutBuilder->append(shard.raw);
@@ -205,26 +169,21 @@ void render() {
     // ---
     // render "after text" area
     // ---
-    for(uint8_t i = 0 ; i < 10 ; i++) {
-        vtOutBuilder
-        ->goNextLine()
-        ->append(u8"~");
+    for (uint8_t i = 0; i < 10; i++) {
+        vtOutBuilder->goNextLine()->append(u8"~");
     }
     vtOut.push(*(vtOutBuilder->build()));
 
     // ---
     // render document status
     // ---
-    vtOutBuilder
-        ->goNextLine()
-        ->append(u8"===(unsaved note 01)===0 chars=======================(col,row):001,001===");
+    vtOutBuilder->goNextLine()->append(u8"===(unsaved note 01)===0 chars=======================(col,row):001,001===");
     vtOut.push(*(vtOutBuilder->build()));
 
     // ---
     // render application panel
     // ---
-    vtOutBuilder
-        ->goNextLine()
+    vtOutBuilder->goNextLine()
         ->append(u8"---EDIT MODE---                                    (ESC for command mode)")
         ->goNextLine()
         ->append(u8"   Ct-Q : quit   --    Ct-S : save    --    Ct-O : load")
@@ -240,16 +199,13 @@ void render() {
 }
 
 void init() {
-    theDocument.init(); // FIXME change code so that it is not mandatory (otherwise, theDocument.put() fails catastrophically
-    vtOut.push(*(vtOutBuilder
-        ->clearScreen()
-        ->build())
-    );
-    render() ;
+    theDocument.init();  // FIXME change code so that it is not mandatory (otherwise, theDocument.put() fails catastrophically
+    vtOut.push(*(vtOutBuilder->clearScreen()->build()));
+    render();
 }
 
 int main() {
-    init() ;
+    init();
     // REPL loop
     cmspk::term::VtInputSource source(std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>>(new AsciiCharSourceFromFile(STDIN_FILENO)));
     while (isRunning) {
@@ -264,8 +220,8 @@ int main() {
             } else if (std::holds_alternative<cmspk::term::VtInputKey>(in)) {
                 onKeyVtInput(std::get<cmspk::term::VtInputKey>(in));
             } else if (std::holds_alternative<cmspk::term::VtInputReport>(in)) {
-				onReportInput(std::get<cmspk::term::VtInputReport>(in));
-			}
+                onReportInput(std::get<cmspk::term::VtInputReport>(in));
+            }
         } else {
             cmspk::io::IoErrorAscii error = nextInput.error();
             if (error.type != cmspk::io::IoErrorType::NOT_READY) {
@@ -275,9 +231,9 @@ int main() {
         }
 
         // REPL -- Print
-        if(needRedraw) {
+        if (needRedraw) {
             render();
-            notifyDoneRender() ;
+            notifyDoneRender();
         }
 
         // REPL -- Loop
