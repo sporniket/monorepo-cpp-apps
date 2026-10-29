@@ -71,10 +71,6 @@ class BasicStringSinkToFile : public cmspk::io::BasicDataSink<std::basic_string<
     static const cmspk::io::BasicIoError<CharT> not_ready_error() {
         return {.type = cmspk::io::IoErrorType::NOT_READY, .message = message_not_ready, .details = {}};
     }
-    static const cmspk::io::BasicIoError<CharT> null_data_error() {
-        // FIXME : provision a new error type
-        return {.type = cmspk::io::IoErrorType::NOT_READY, .message = message_null_data, .details = {}};
-    }
 
     BasicDataSinkReport<CharT> makeReportForSingleOperation(ssize_t writeResult, int savedErrno) {
         if (writeResult < 0) {
