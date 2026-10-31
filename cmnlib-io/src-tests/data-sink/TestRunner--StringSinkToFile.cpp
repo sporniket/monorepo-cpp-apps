@@ -4,7 +4,7 @@
 // This is part of **term library by sporniket**.
 // A collection of utilities for writing terminal-hosted applications.
 // ---
-// @since v0.0.2
+// @since v0.0.3
 
 // standard libs
 #include <cstdint>

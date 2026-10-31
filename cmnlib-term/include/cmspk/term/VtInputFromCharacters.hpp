@@ -24,6 +24,7 @@ namespace cmspk::term {
 // Enums of errors
 /**
  * Identifiable causes of error.
+ *
  * @since v0.0.2
  */
 enum class VtInputFromCharactersError { CANNOT_ACCEPT_ANY_NEW_CHARACTER };
@@ -72,6 +73,7 @@ enum class VtInputSequenceParserState {
  * Parser context to match a VT input sequence.
  *
  * A general form of VT input sequence is `'\x1b['+[number + [';' + number]]+command`.
+ *
  * @since v0.0.2
  */
 struct VtInputSequenceParserContext {

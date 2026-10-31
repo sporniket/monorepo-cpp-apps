@@ -91,6 +91,8 @@ class BasicDataSink {
  * An interface to model a source of arbitrary type.
  *
  * @param T the type returned by a successfull read.
+ *
+ * @since v0.0.3
  */
 template <class T>
 using DataSink = BasicDataSink<T, char32_t>;

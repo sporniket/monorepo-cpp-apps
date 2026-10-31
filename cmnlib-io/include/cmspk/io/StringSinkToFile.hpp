@@ -20,6 +20,8 @@ namespace cmspk::io {
 // ================[ CODE BEGINS ]================
 /**
  * Sink for strings, encapsulating a C file write operation.
+ *
+ * @since v0.0.3
  */
 template <class CharT>
 class BasicStringSinkToFile : public cmspk::io::BasicDataSink<std::basic_string<CharT>, CharT> {
