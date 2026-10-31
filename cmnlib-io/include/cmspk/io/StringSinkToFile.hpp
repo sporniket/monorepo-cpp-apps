@@ -11,8 +11,8 @@
 // required
 #include <unistd.h>
 
-#include <optional>
 #include <functional>
+#include <optional>
 
 #include "cmspk/io/DataSink.hpp"
 
@@ -21,7 +21,7 @@ namespace cmspk::io {
 /**
  * Sink for strings, encapsulating a C file write operation.
  */
-template<class CharT>
+template <class CharT>
 class BasicStringSinkToFile : public cmspk::io::BasicDataSink<std::basic_string<CharT>, CharT> {
   public:
     BasicStringSinkToFile(int fileDescriptorId, std::function<ssize_t(int, const void*, size_t)> writeImpl = write)
@@ -62,14 +62,11 @@ class BasicStringSinkToFile : public cmspk::io::BasicDataSink<std::basic_string<
     int fileDescriptorId;
     bool irrecoverable = false;
     std::function<ssize_t(int, const void*, size_t)> writeImpl;
-    static constexpr std::basic_string<CharT> message_bad_state = convertUsAsciiString<CharT>(u8"bad.state");
-    static constexpr std::basic_string<CharT> message_not_ready = convertUsAsciiString<CharT>(u8"try.later");
-    static constexpr std::basic_string<CharT> message_null_data = convertUsAsciiString<CharT>(u8"data.is.null");
     static const cmspk::io::BasicIoError<CharT> irrecoverable_error() {
-        return {.type = cmspk::io::IoErrorType::BAD, .message = message_bad_state, .details = {}};
+        return {.type = cmspk::io::IoErrorType::BAD, .message = convertUsAsciiString<CharT>(u8"bad.state"), .details = {}};
     }
     static const cmspk::io::BasicIoError<CharT> not_ready_error() {
-        return {.type = cmspk::io::IoErrorType::NOT_READY, .message = message_not_ready, .details = {}};
+        return {.type = cmspk::io::IoErrorType::NOT_READY, .message = convertUsAsciiString<CharT>(u8"try.later"), .details = {}};
     }
 
     BasicDataSinkReport<CharT> makeReportForSingleOperation(ssize_t writeResult, int savedErrno) {
@@ -82,7 +79,7 @@ class BasicStringSinkToFile : public cmspk::io::BasicDataSink<std::basic_string<
         } else if (writeResult == 0) {
             return {.countItem = 0, .countSize = 0, .error = BasicStringSinkToFile<CharT>::not_ready_error()};
         }
-        return {.countItem = 1, .countSize = (size_t)writeResult, .error = std::nullopt };
+        return {.countItem = 1, .countSize = (size_t)writeResult, .error = std::nullopt};
     }
 };
 

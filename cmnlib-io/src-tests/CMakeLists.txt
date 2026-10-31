@@ -9,6 +9,7 @@
 find_library(LIBCRITERION criterion REQUIRED)
 
 # each module has its own folder
+add_subdirectory(data-sink)
 add_subdirectory(data-source)
 add_subdirectory(io-error)
 
@@ -18,6 +19,7 @@ add_subdirectory(io-error)
 add_custom_target(
     verify
     DEPENDS
+    verify--data-sink
     verify--data-source
     verify--io-error
 )

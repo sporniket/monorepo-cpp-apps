@@ -22,17 +22,17 @@ namespace cmspk::io {
  *
  * @since v0.0.3
  */
-template<class CharT>
+template <class CharT>
 struct BasicDataSinkReport {
     /**
      * The number of data successfully pushed in the sink.
      */
-    size_t countItem ;
+    size_t countItem;
 
     /**
      * Usually countItem * sizeof(T) for fixed size
      */
-    size_t countSize ;
+    size_t countSize;
 
     /**
      * The error that interrupted the operation.

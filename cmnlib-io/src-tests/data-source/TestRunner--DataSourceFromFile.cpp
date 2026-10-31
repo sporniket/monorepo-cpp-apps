@@ -9,12 +9,10 @@
 // standard libs
 #include <cstdint>
 #include <expected>
-#include <string>
-#include <memory>
-#include <optional>
-#include <variant>
-#include <vector>
 #include <functional>
+#include <memory>
+#include <string>
+#include <vector>
 
 // testing framework
 #include <criterion/criterion.h>
@@ -22,33 +20,29 @@
 // project
 #include "cmspk/io/DataSourceFromFile.hpp"
 
-
 // ================[ BEGIN common code ]==================
+
+struct SpyReport {
+    int fileDescriptorId;
+    size_t readLength;
+};
 
 // ================[ END common code ]==================
 
 // ================[ BEGIN test suite ]==================
 // Parameterized tests are a hassle, see it later
 
-
-// ----
-
-
-struct SpyReport {
-    int fileDescriptorId;
-    size_t readLength;
-};
 Test(BasicDataSourceFromFile, should_call_the_provided_read_function) {
     /// __given__ the data source from file is given a dummy file descriptor and a spying read function
     SpyReport report{};
-    auto spyRead = [&report](int fd, void* buffer, size_t length) mutable noexcept -> size_t {
+    auto spyRead = [&report](int fd, void* buffer, size_t length) mutable noexcept -> ssize_t {
         char8_t data[2]{u8"A"};
-        char8_t* cBuffer = (char8_t *)buffer;
+        char8_t* cBuffer = (char8_t*)buffer;
         report.fileDescriptorId = fd;
         report.readLength = length;
-        cBuffer[0]=data[0];
+        cBuffer[0] = data[0];
         return 1;
-    } ;
+    };
     std::unique_ptr<cmspk::io::BasicDataSource<char8_t, char8_t>> source(new cmspk::io::BasicDataSourceFromFile<char8_t, char8_t>(42, spyRead));
 
     /// __when__ calling next()

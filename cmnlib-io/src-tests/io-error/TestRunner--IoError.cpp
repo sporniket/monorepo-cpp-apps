@@ -23,17 +23,15 @@
 // ================[ BEGIN test suite ]==================
 // Parameterized tests are a hassle, see it later
 
-
 Test(convertUsAsciiString, should_convert_only_printable_us_ascii_characters) {
     /// __given__ an input string containing characters that are not US-ASCII, or are control characters
     std::basic_string<char8_t> in(u8"évènement héroïque\r\n");
 
     /// __when__ calling convertUsAsciiString()
-    std::basic_string<char32_t> converted = cmspk::io::convertUsAsciiString<char32_t>(in) ;
+    std::basic_string<char32_t> converted = cmspk::io::convertUsAsciiString<char32_t>(in);
 
     /// __then__ the result converted those characters to one or more '?'
     cr_assert(converted.compare(U"??v??nement h??ro??que??") == 0);
-
 }
 
 Test(convertUsAsciiAndControlString, should_convert_only_printable_and_control_us_ascii_characters) {
@@ -41,11 +39,10 @@ Test(convertUsAsciiAndControlString, should_convert_only_printable_and_control_u
     std::basic_string<char8_t> in(u8"évènement héroïque\r\n");
 
     /// __when__ calling convertUsAsciiAndControlString()
-    std::basic_string<char32_t> converted = cmspk::io::convertUsAsciiAndControlString<char32_t>(in) ;
+    std::basic_string<char32_t> converted = cmspk::io::convertUsAsciiAndControlString<char32_t>(in);
 
     /// __then__ the result converted those characters to one or more '?'
     cr_assert(converted.compare(U"??v??nement h??ro??que\r\n") == 0);
-
 }
 
 // ================[ END test suite ]==================
