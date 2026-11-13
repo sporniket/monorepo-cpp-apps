@@ -12,6 +12,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 While C++ was my first crush on OOP, I find that Java is the best OOP language ever designed, so expect a fair bias toward the Java way of doing things.
 
+This is of course my personnal taste.
+
 ### A byte is an octet
 
 I never used CPU that have exotic memory models, in other words,
@@ -69,13 +71,12 @@ uint8_t* uint8Array = (uint8_t*)ptr; // contains 0x12,0x34,0x56,0x78,0x9a,0xbc,0
 
 ### auto is evil
 
-The keyword `auto` hides knowledge. It's bad for discovering a codebase, as well as for learning the language.
+The `auto` keyword is generally banned, with one exception.
 
-For some types, it may trigger unwanted copy or move.
+* The keyword `auto` hides knowledge. It's bad for discovering a codebase, as well as for learning the language.
+* For some types, it may trigger unwanted copy or move, as explained there : https://medium.com/@rogerbooth/c-gotcha-unnecessary-copies-due-to-the-misuse-of-auto-ed24e65b5efd).
 
-`auto` is a necessary evil only when handling lambdas. **However**, try to design code to avoid it, either by using `std::function` or other alternative.
-
-In any other case, `auto` is banned.
+**The only exception** is for declaring lambdas, e.g. `auto myHandler = [/*capture list*/](/*args list*/)->someType{/*body*/} ;`. **However**, I would challenge the use of auto in favor of, say `std::function` **UNLESS** there is a strong motivation in favor of `auto` because of a critical performance problem.
 
 ## Types
 
@@ -97,7 +98,7 @@ Exceptions:
 
 ### Design types with string values agnostically
 
-If a type `T` has fields being strings, or uses strings in its methods : 
+If a type `T` has fields being strings, or uses strings in its methods :
 
 * Define a template `BasicT<...,class S>` with S a string type, e.g. `std::string`, `std::u32string`,...
 * Define `T` as `BasicT<...,std::u32string>` ; implements the specifics of this alias as needed.
@@ -107,11 +108,11 @@ If a type `T` has fields being strings, or uses strings in its methods :
 
 ### Return std::expected or std::optional instead of error codes
 
-When designing an API for a task that MAY fail : 
+When designing an API for a task that MAY fail :
 
 * DO use `std::expected<T,E>` for public APIs.
 * MAY use `std::optional<T>` in private APIs, when knowing which kind of error does not matter or won't be reported to anyone anyway.
-* DON'T use a sentinel value to express OK/ERROR/WHICH ERROR. 
+* DON'T use a sentinel value to express OK/ERROR/WHICH ERROR.
 
 ## Style
 
@@ -130,7 +131,7 @@ e.g.
 class SimplyDocumented{
   /**
    * A short description ending with a dot.
-   * 
+   *
    * Having a short complimentary text still count for simple.
    *
    * Because it is not too tedious to maintain the leading '*'.
@@ -157,7 +158,7 @@ e.g. (Let’s pretend that in the embedded code, code fences is `$$$` because of
 /*************************************************
 A finely crafted function.
 
-This function has been devised to be typically used as following : 
+This function has been devised to be typically used as following :
 
 $$$cpp
 #include "the_header"
