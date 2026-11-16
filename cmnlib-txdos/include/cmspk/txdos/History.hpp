@@ -26,6 +26,8 @@ namespace cmspk::txdos {
  * An history cannot grow beyond its initial capacity.
  *
  * @see Specs--History.cpp
+ *
+ * @since v0.0.4
  */
 template <class RecordT>
 class History {

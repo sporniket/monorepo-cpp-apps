@@ -3,6 +3,7 @@ creation-date: 2026-11-11
 copyright-years: 2026
 copyright-authors: David SPORN
 SPDX-License-Identifier: AGPL-3.0-or-later
+since: v0.0.4
 ---
 
 # txdos : TeXtual Document Operating System

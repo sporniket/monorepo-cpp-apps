@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2026 David SPORN
 # ---
-# This is part of **term library by sporniket**.
-# A collection of utilities for writing terminal-hosted applications.
+# This is part of **txdos library by sporniket**.
+# An operating system for textual documents.
 # ---
 cmake_minimum_required(VERSION 3.31)
 project(cmspk_io)
